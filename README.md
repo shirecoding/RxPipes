@@ -14,6 +14,7 @@ pip3 install ./
 ```python
 from rxpipes import Pipeline
 
+# create pipeline
 class Multiply(Pipeline):
     
     def setup(self, mul):
@@ -22,6 +23,16 @@ class Multiply(Pipeline):
     def run(self, x):
         return x * self.mul
 
+# execute a pipeline
 Multiply(2)(2) # -> 4
 Multiply(2)([1,2,3]) # -> [1, 2, 3, 1, 2, 3]
+
+# compose larger pipelines
+mul2 = Multiply(2)
+mul8 = mul2.pipe(
+    mul2,
+    mul2
+)
+
+mul8(2) # -> 16
 ```

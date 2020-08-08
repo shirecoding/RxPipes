@@ -7,7 +7,8 @@ setup(
     version=__version__,
     author='shirecoding',
     install_requires=[
-        'rx'
+        'rx',
+        'toolz'
     ],
     url='https://github.com/shirecoding/RxPipes',
     long_description=open('README.md').read(),

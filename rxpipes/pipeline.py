@@ -1,6 +1,7 @@
 import rx
 from rx import operators as ops
 from abc import abstractmethod
+from toolz import compose
 
 class Pipeline():
     
@@ -46,4 +47,21 @@ class Pipeline():
         run the observable and return the result
         """
         return self.observable(x).run()
+    
+    def pipe(self, *pipelines):
+
+        parent = self
+
+        class _wrapper(Pipeline):
+
+            def setup(self):
+                pass
+                
+            def run(self, x):
+                return compose(
+                    *[ p.run for p in pipelines ][::-1]
+                )(parent(x))
+
+        return _wrapper()
+
         
