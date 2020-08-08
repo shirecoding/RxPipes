@@ -2,6 +2,7 @@ import rx
 from rx import operators as ops
 from abc import abstractmethod
 from toolz import compose
+from .utils import class_or_instancemethod
 
 class Pipeline():
     
@@ -48,9 +49,12 @@ class Pipeline():
         """
         return self.observable(x).run()
     
-    def pipe(self, *pipelines):
+    @class_or_instancemethod
+    def pipe(cls, *pipelines):
 
-        parent = self
+        # add parent to pipelines if instanced
+        if not isinstance(cls, type):
+            pipelines = (cls, *pipelines)
 
         class _wrapper(Pipeline):
 
@@ -60,7 +64,7 @@ class Pipeline():
             def run(self, x):
                 return compose(
                     *[ p.run for p in pipelines ][::-1]
-                )(parent(x))
+                )(x)
 
         return _wrapper()
 
