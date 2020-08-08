@@ -37,10 +37,11 @@ mul8 = mul2.pipe(
 mul8(2) # -> 16
 
 # alternatively
+mul8 = Pipeline.pipe(
+    Multiply(2),
+    Multiply(2),
+    Multiply(2),
+)(2)
 
-Pipeline.pipe(
-    Multiply(2),
-    Multiply(2),
-    Multiply(2),
-)(2) # -> 16
+mul8(2) # -> 16
 ```
