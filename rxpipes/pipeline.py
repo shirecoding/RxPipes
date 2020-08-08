@@ -68,4 +68,20 @@ class Pipeline():
 
         return _wrapper()
 
-        
+    
+    ##############################################################################
+    ## HELPERS
+    ##############################################################################
+
+    @classmethod
+    def from_lambda(cls, func):
+
+        class _wrapper(Pipeline):
+
+            def setup(self):
+                pass
+                
+            def run(self, x):
+                return func(x)
+
+        return _wrapper()

@@ -44,4 +44,9 @@ mul8 = Pipeline.pipe(
 )(2)
 
 mul8(2) # -> 16
+
+# create pipeline from lambda
+mul2 = Pipeline.from_lambda(lambda x: 2*x)
+
+mul2(2) # -> 4
 ```
