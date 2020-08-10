@@ -62,3 +62,23 @@ mul2 = Pipeline.pipe(
 import rx
 x = mul2(rx.interval(1), daemon=True) # -> 0, 2, 4, 6, ....
 ```
+
+## Example: Image Processing Pipeline
+
+```python
+preprocessing = Pipeline.pipe(
+    Rescale2D(50, 50),
+    Normalize(0, 1),
+    Pipeline.from_(lambda x: np.expand_dims(x, axis=-1))
+)
+
+postprocessing = Pipeline.pipe(
+    Pipeline.from_(lambda x: np.argmax(x, axis=-1))
+)
+
+predict = Pipeline.pipe(
+    preprocessing,
+    Pipeline.from_(lambda x: model.predict(x)),
+    postprocessing
+)
+```
