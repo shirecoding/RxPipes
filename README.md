@@ -63,6 +63,17 @@ import rx
 x = mul2(rx.interval(1), daemon=True) # -> 0, 2, 4, 6, ....
 ```
 
+## Example: Parallel Processling
+
+```python
+mul2 = Pipeline.from_(lambda x: 2*x)
+
+Pipeline.parallel(
+    mul2,
+    mul2
+)(2, 4) # -> [4, 8]
+```
+
 ## Example: Image Processing Pipeline
 
 ```python

@@ -36,6 +36,28 @@ class Pipeline():
 
         return _wrapper()
 
+    @class_or_instancemethod
+    def parallel(cls, *pipelines):
+
+        class _wrapper(Pipeline):
+
+            def setup(self):
+                pass
+                
+            def run(self, *args):
+                return NotImplementedError
+
+            @property
+            def operator(self):
+                return NotImplementedError
+
+            def observable(self, *args):
+                return rx.concat(*[ rx.of(x).pipe(ops.map(p.run)) for p, x in zip(pipelines, args) ]).pipe(
+                    ops.buffer_with_count(len(pipelines))
+                )
+
+        return _wrapper()
+
     @classmethod
     def from_(cls, p):
 
@@ -66,7 +88,7 @@ class Pipeline():
         raise NotImplementedError("Pipeline/setup")
    
     @abstractmethod
-    def run(self, x):
+    def run(self, *args, **kwargs):
         """
         main logic
         """
@@ -83,27 +105,24 @@ class Pipeline():
         """
         return ops.map(self.run)
 
-    def observable(self, x):
+    def observable(self, *x):
         """
         return the observable instead of __call__
         """
-        return rx.of(x).pipe(self.operator)
+        return rx.of(*x).pipe(self.operator)
 
-    def __call__(self, x, daemon=False):
+    def __call__(self, *x, daemon=False):
         """
         run and return the result
         """
-        if isinstance(x, Observable):
+        if len(x) == 1 and isinstance(x[0], Observable):
             if daemon:
-                return x.pipe(self.operator).subscribe()
+                return x[0].pipe(self.operator).subscribe()
             else:
-                return x.pipe(self.operator).run()
-
-        elif isinstance(p, types.FunctionType) or callable(p):
-            return self.observable(x).run()
-
+                return x[0].pipe(self.operator).run()
         else:
-            raise Exception(f"unsupported type {type(x)}")
+            return self.observable(*x).run()
+
     
     ##############################################################################
     ## HELPERS
