@@ -60,6 +60,11 @@ mul2 = Pipeline.pipe(
 )
 
 import rx
+
+# blocking
+x = mul2(rx.interval(1)) # -> 0, 2, 4, 6, ....
+
+# run in background
 x = mul2(rx.interval(1), daemon=True) # -> 0, 2, 4, 6, ....
 ```
 
