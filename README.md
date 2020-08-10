@@ -72,6 +72,13 @@ Pipeline.parallel(
     mul2,
     mul2
 )(2, 4) # -> [4, 8]
+
+import rx
+
+Pipeline.parallel(
+    mul2,
+    mul2
+)(rx.of(2, 4)) # -> [4, 8]
 ```
 
 ## Example: Image Processing Pipeline

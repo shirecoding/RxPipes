@@ -44,15 +44,14 @@ class Pipeline():
             def setup(self):
                 pass
                 
-            def run(self, *args):
-                return NotImplementedError
+            def run(self, px):
+                return px[1].run((px[0]))
 
             @property
             def operator(self):
-                return NotImplementedError
-
-            def observable(self, *args):
-                return rx.concat(*[ rx.of(x).pipe(ops.map(p.run)) for p, x in zip(pipelines, args) ]).pipe(
+                return rx.pipe(
+                    ops.zip(rx.of(*pipelines)),
+                    ops.map(self.run),
                     ops.buffer_with_count(len(pipelines))
                 )
 
