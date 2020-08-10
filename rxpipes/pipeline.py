@@ -39,7 +39,7 @@ class Pipeline():
     @classmethod
     def from_(cls, p):
 
-        if isinstance(p, types.FunctionType):
+        if isinstance(p, types.FunctionType) or callable(p):
 
             class _wrapper(Pipeline):
 
@@ -89,14 +89,17 @@ class Pipeline():
         """
         return rx.of(x).pipe(self.operator)
 
-    def __call__(self, x):
+    def __call__(self, x, daemon=False):
         """
         run and return the result
         """
         if isinstance(x, Observable):
-            return x.pipe(self.operator).run()
+            if daemon:
+                return x.pipe(self.operator).subscribe()
+            else:
+                return x.pipe(self.operator).run()
 
-        elif isinstance(p, types.FunctionType):
+        elif isinstance(p, types.FunctionType) or callable(p):
             return self.observable(x).run()
 
         else:

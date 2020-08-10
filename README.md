@@ -9,7 +9,7 @@ cd RxPipes
 pip3 install ./
 ```
 
-## Usage
+## Example: Static Data
 
 ```python
 from rxpipes import Pipeline
@@ -49,4 +49,16 @@ mul8(2) # -> 16
 mul2 = Pipeline.from_(lambda x: 2*x)
 
 mul2(2) # -> 4
+```
+
+## Example: Reactive Data Streams
+
+```python
+mul2 = Pipeline.pipe(
+    Pipeline.from_(lambda x: 2*x),
+    Pipeline.from_(print),
+)
+
+import rx
+x = mul2(rx.interval(1), daemon=True) # -> 0, 2, 4, 6, ....
 ```
