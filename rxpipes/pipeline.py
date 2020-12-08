@@ -7,8 +7,7 @@ from .utils import class_or_instancemethod
 import types
 
 # injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
-injectable_operations = [ 'max', 'map' ]
-# injectable_operations = [ 'max' ]
+injectable_operations = [ 'map', 'max' ]
 
 class Pipeline():
 
@@ -16,17 +15,17 @@ class Pipeline():
 
         parent = self
 
-        # inject operations
-        for op in injectable_operations:
-            setattr(
-                self,
-                op,
-                lambda *_args, **_kwargs: type(
-                    f"Class_{op}",
-                    (Pipeline,),
-                    {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*_args, **_kwargs))}
-                )()
-            )
+        # # inject operations - DOES NOT WORK, LAST OPERATION OVERWRITES EVERYTHING
+        # for op in injectable_operations:
+        #     setattr(
+        #         self,
+        #         op,
+        #         lambda *_args, **_kwargs: type(
+        #             f"Class_{op}",
+        #             (Pipeline,),
+        #             {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*_args, **_kwargs))}
+        #         )()
+        #     )
 
         # call user setup
         self.setup(*args, **kwargs)
@@ -47,6 +46,26 @@ class Pipeline():
 
     def _operation(self):
         return operators.map(self.operation)
+
+    ##############################################################################
+    ## Extend
+    ##############################################################################
+
+    def map(self, *args, **kwargs):
+        parent = self
+        return type(
+            f"Class_{'map'}",
+            (Pipeline,),
+            {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, 'map')(*args, **kwargs))}
+        )()
+
+    def max(self, *args, **kwargs):
+        parent = self
+        return type(
+            f"Class_{'max'}",
+            (Pipeline,),
+            {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, 'max')(*args, **kwargs))}
+        )()
 
     ##############################################################################
     ## USAGE
