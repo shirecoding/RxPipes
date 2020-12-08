@@ -8,14 +8,16 @@ import types
 
 # injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
 injectable_operations = [ 'max', 'map' ]
+# injectable_operations = [ 'max' ]
 
 class Pipeline():
 
     def __init__(self, *args, **kwargs):
-        
+
+        parent = self
+
         # inject operations
         for op in injectable_operations:
-            parent = self
             setattr(
                 self,
                 op,
