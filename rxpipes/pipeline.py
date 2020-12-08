@@ -16,7 +16,6 @@ class Pipeline():
         # inject operations
         for op in injectable_operations:
             parent = self
-            # print(f"injecting Class_{op}, {getattr(operators, op)}")
             setattr(
                 self,
                 op,
@@ -26,8 +25,6 @@ class Pipeline():
                     {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*_args, **_kwargs))}
                 )()
             )
-
-        # print(dir(self))
 
         # call user setup
         self.setup(*args, **kwargs)

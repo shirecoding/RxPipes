@@ -1,5 +1,5 @@
 # RxPipes
-Framework for data-flow programming using RxPY
+A thin wrapper around RxPy for data-flow programming.
 
 ## Install
 
