@@ -13,18 +13,12 @@ class Pipeline():
 
     def __init__(self, *args, **kwargs):
 
-        parent = self
-
         # # inject operations - DOES NOT WORK, LAST OPERATION OVERWRITES EVERYTHING
         # for op in injectable_operations:
         #     setattr(
         #         self,
         #         op,
-        #         lambda *_args, **_kwargs: type(
-        #             f"Class_{op}",
-        #             (Pipeline,),
-        #             {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*_args, **_kwargs))}
-        #         )()
+        #         lambda *_args, **_kwargs: self._create_operator_class(op, *_args, **_kwargs)
         #     )
 
         # call user setup
@@ -47,25 +41,23 @@ class Pipeline():
     def _operation(self):
         return operators.map(self.operation)
 
+    def _create_operator_class(self, op, *args, **kwargs):
+        parent = self
+        return type(
+            f"Class_{op}",
+            (Pipeline,),
+            {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*args, **kwargs))}
+        )()
+
     ##############################################################################
     ## Extend
     ##############################################################################
 
     def map(self, *args, **kwargs):
-        parent = self
-        return type(
-            f"Class_{'map'}",
-            (Pipeline,),
-            {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, 'map')(*args, **kwargs))}
-        )()
+        return self._create_operator_class('map', *args, **kwargs)
 
     def max(self, *args, **kwargs):
-        parent = self
-        return type(
-            f"Class_{'max'}",
-            (Pipeline,),
-            {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, 'max')(*args, **kwargs))}
-        )()
+        return self._create_operator_class('max', *args, **kwargs)
 
     ##############################################################################
     ## USAGE
