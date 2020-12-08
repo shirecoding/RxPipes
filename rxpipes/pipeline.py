@@ -1,130 +1,69 @@
 import rx
-from rx import operators as ops
+from rx import operators
 from rx import Observable
 from abc import abstractmethod
 from toolz import compose
 from .utils import class_or_instancemethod
 import types
 
+# injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
+injectable_operations = [ 'max', 'map' ]
+
 class Pipeline():
 
-    ##############################################################################
-    ## CREATION
-    ##############################################################################
-    
     def __init__(self, *args, **kwargs):
         
+        # inject operations
+        for op in injectable_operations:
+            parent = self
+            # print(f"injecting Class_{op}, {getattr(operators, op)}")
+            setattr(
+                self,
+                op,
+                lambda *_args, **_kwargs: type(
+                    f"Class_{op}",
+                    (Pipeline,),
+                    {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*_args, **_kwargs))}
+                )()
+            )
+
+        # print(dir(self))
+
         # call user setup
         self.setup(*args, **kwargs)
-
-    @class_or_instancemethod
-    def pipe(cls, *pipelines):
-
-        # add parent to pipelines if instanced
-        if not isinstance(cls, type):
-            pipelines = (cls, *pipelines)
-
-        class _wrapper(Pipeline):
-
-            def setup(self):
-                pass
-                
-            def run(self, x):
-                return compose(
-                    *[ p.run for p in pipelines ][::-1]
-                )(x)
-
-        return _wrapper()
-
-    @class_or_instancemethod
-    def parallel(cls, *pipelines):
-
-        class _wrapper(Pipeline):
-
-            def setup(self):
-                pass
-                
-            def run(self, px):
-                return px[1].run((px[0]))
-
-            @property
-            def operator(self):
-                return rx.pipe(
-                    ops.zip(rx.of(*pipelines)),
-                    ops.map(self.run),
-                    ops.buffer_with_count(len(pipelines))
-                )
-
-        return _wrapper()
-
-    @classmethod
-    def from_(cls, p):
-
-        if isinstance(p, types.FunctionType) or callable(p):
-
-            class _wrapper(Pipeline):
-
-                def setup(self):
-                    pass
-                    
-                def run(self, x):
-                    return p(x)
-
-            return _wrapper()
-
-        else:
-            raise Exception(f"unsupported type {type(p)}")
 
     ##############################################################################
     ## USER DEFINED METHODS
     ##############################################################################
     
-    @abstractmethod
     def setup(self, *args, **kwargs):
-        """
-        allow runtime configuration in "run" using setup parameters
-        """
-        raise NotImplementedError("Pipeline/setup")
-   
-    @abstractmethod
-    def run(self, *args, **kwargs):
-        """
-        main logic
-        """
-        raise NotImplementedError("Pipeline/run")   
+        pass
+
+    def operation(self, *args, **kwargs):
+        pass
 
     ##############################################################################
-    ## USE
+    ## INTERNALS
     ##############################################################################
 
-    @property
-    def operator(self):
-        """
-        return the rx operator instead of __call__
-        """
-        return ops.map(self.run)
+    def _operation(self):
+        return operators.map(self.operation)
 
-    def observable(self, *x):
-        """
-        return the observable instead of __call__
-        """
-        return rx.of(*x).pipe(self.operator)
+    ##############################################################################
+    ## USAGE
+    ##############################################################################
 
-    def __call__(self, *x, daemon=False):
-        """
-        run and return the result
-        """
-        if len(x) == 1 and isinstance(x[0], Observable):
-            if daemon:
-                return x[0].pipe(self.operator).subscribe()
+    def __call__(self, *args):
+        if len(args) == 1:
+            if type(args[0]) in [list, tuple, set]:
+                return rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
             else:
-                return x[0].pipe(self.operator).run()
+                return rx.of(*args).pipe(self._operation()).run()
         else:
-            return self.observable(*x).run()
+            return rx.of(*args).pipe(
+                self._operation(),
+                operators.to_list()
+            ).run()
 
-    
-    ##############################################################################
-    ## HELPERS
-    ##############################################################################
-
-    
+    def subscribe(self, *args, **kwargs):
+        return self.obs.subscribe(*args, **kwargs)
