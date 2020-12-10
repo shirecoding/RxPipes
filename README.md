@@ -62,6 +62,12 @@ x = mul2(rx.interval(1), subscribe=lambda x: print(x)) # -> 0, 2, 4, 6, ....
 x.dispose() # unsubscribe to observable
 ```
 
+
+
+------------ NOT WORKING YET ---------------------
+
+
+
 ## Example: Parallel Processling
 
 ```python
