@@ -6,8 +6,6 @@ from toolz import compose
 from .utils import class_or_instancemethod
 import types
 
-_injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
-
 class Pipeline():
 
     def __init__(self, *args, **kwargs):
@@ -17,8 +15,7 @@ class Pipeline():
             def f(*_args, **_kwargs):
                 return self._create_operator_class(op, *_args, **_kwargs)
             return f
-
-        for op in injectable_operations:
+        for op in [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]:
             setattr(self, op, _make_operator_function(op))
 
         # call user setup
