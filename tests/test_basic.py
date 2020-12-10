@@ -1,3 +1,4 @@
+import rx
 from rxpipes import Pipeline
 
 def test_basic():
@@ -22,3 +23,9 @@ def test_basic():
         .filter(lambda x: x%2 == 0) \
         .max() \
         ([1,4,2,5,2]) == [12]
+
+    # subscribe to a pipeline
+    acc = []
+    Multiply(2)(rx.of(1,2,3), subscribe=lambda x: acc.append(x))
+    assert acc == [2,4,6]
+

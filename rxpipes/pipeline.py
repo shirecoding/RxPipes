@@ -54,7 +54,7 @@ class Pipeline():
         if len(args) == 1 and type(args[0]) == Observable:
             if not subscribe:
                 raise Exception("Error: subscribe kwargs is required when arg is an Observable")
-            return args[0].subscribe(subscribe)
+            return args[0].pipe(self._operation()).subscribe(subscribe)
         elif len(args) == 1:
             if type(args[0]) in [list, tuple, set]:
                 return rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
