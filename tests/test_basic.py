@@ -17,3 +17,8 @@ def test_basic():
     assert Multiply(2).map(lambda x: 2 * x)(2) == 8
     assert Multiply(1).max()([1,2,3]) == [3]
     assert Multiply(2).map(lambda x: 2 * x).max()([1,2,3,4,5]) == [20]
+    assert Multiply(1) \
+        .map(lambda x: 3*x) \
+        .filter(lambda x: x%2 == 0) \
+        .max() \
+        ([1,4,2,5,2]) == [12]
