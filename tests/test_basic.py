@@ -43,3 +43,7 @@ def test_basic():
 
     # compose pipelines from class
     assert Pipeline.pipe(mul2, mul2)(2) == 8
+    assert Pipeline.pipe(
+        Multiply(2),
+        Multiply(2)
+    )(2) == 8
