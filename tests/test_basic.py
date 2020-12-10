@@ -18,14 +18,22 @@ def test_basic():
     assert Multiply(2).map(lambda x: 2 * x)(2) == 8
     assert Multiply(1).max()([1,2,3]) == [3]
     assert Multiply(2).map(lambda x: 2 * x).max()([1,2,3,4,5]) == [20]
-    assert Multiply(1) \
+    pipeline = Multiply(1) \
         .map(lambda x: 3*x) \
         .filter(lambda x: x%2 == 0) \
-        .max() \
-        ([1,4,2,5,2]) == [12]
+        .max()
+    assert pipeline([1,4,2,5,2]) == [12]
 
     # subscribe to a pipeline
     acc = []
     Multiply(2)(rx.of(1,2,3), subscribe=lambda x: acc.append(x))
     assert acc == [2,4,6]
+
+    acc = []
+    pipeline = Multiply(1) \
+        .map(lambda x: 3*x) \
+        .filter(lambda x: x%2 == 0) \
+        .max()
+    pipeline(rx.from_([1,4,2,5,2]), subscribe=lambda x: acc.append(x))
+    assert acc == [12]
 
