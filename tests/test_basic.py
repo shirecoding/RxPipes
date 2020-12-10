@@ -28,7 +28,6 @@ def test_basic():
     acc = []
     Multiply(2)(rx.of(1,2,3), subscribe=lambda x: acc.append(x))
     assert acc == [2,4,6]
-
     acc = []
     pipeline = Multiply(1) \
         .map(lambda x: 3*x) \
@@ -37,3 +36,7 @@ def test_basic():
     pipeline(rx.from_([1,4,2,5,2]), subscribe=lambda x: acc.append(x))
     assert acc == [12]
 
+    # compose pipelines
+    mul2 = Multiply(2)
+    mul4 = mul2.pipe(mul2)
+    assert mul4(2) == 8
