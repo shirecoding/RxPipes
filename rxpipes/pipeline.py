@@ -71,6 +71,13 @@ class Pipeline():
                 {'_operation': lambda self: rx.pipe(*[p._operation() for p in pipelines])}
             )()
 
+    @classmethod
+    def from_lambda(cls, f):
+        return type(
+            f"Pipeline_{uuid.uuid4().hex}",
+            (Pipeline,),
+            {'_operation': lambda self: operators.map(f)}
+        )()
 
     def __call__(self, *args, subscribe=None):
         if len(args) == 1 and type(args[0]) == Observable:

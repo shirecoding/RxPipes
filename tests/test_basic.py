@@ -47,3 +47,6 @@ def test_basic():
         Multiply(2),
         Multiply(2)
     )(2) == 8
+
+    # create pipeline from lambda
+    assert Pipeline.from_lambda(lambda x: x*2)(2) == 4

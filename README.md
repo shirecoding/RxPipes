@@ -20,12 +20,12 @@ class Multiply(Pipeline):
     def setup(self, mul):
         self.mul = 2
     
-    def run(self, x):
+    def operation(self, x):
         return x * self.mul
 
 # execute a pipeline
 Multiply(2)(2) # -> 4
-Multiply(2)([1,2,3]) # -> [1, 2, 3, 1, 2, 3]
+Multiply(2)([1,2,3]) # -> [2, 4, 6]
 
 # compose larger pipelines
 mul2 = Multiply(2)
@@ -46,7 +46,7 @@ mul8 = Pipeline.pipe(
 mul8(2) # -> 16
 
 # create pipeline from lamba
-mul2 = Pipeline.from_(lambda x: 2*x)
+mul2 = Pipeline.from_lambda(lambda x: 2*x)
 
 mul2(2) # -> 4
 ```
