@@ -54,18 +54,12 @@ mul2(2) # -> 4
 ## Example: Reactive Data Streams
 
 ```python
-mul2 = Pipeline.pipe(
-    Pipeline.from_(lambda x: 2*x),
-    Pipeline.from_(print),
-)
-
 import rx
 
-# blocking
-x = mul2(rx.interval(1)) # -> 0, 2, 4, 6, ....
+mul2 = Pipeline.from_lambda(lambda x: 2*x)
+x = mul2(rx.interval(1), subscribe=lambda x: print(x)) # -> 0, 2, 4, 6, ....
 
-# run in background
-x = mul2(rx.interval(1), daemon=True) # -> 0, 2, 4, 6, ....
+x.dispose() # unsubscribe to observable
 ```
 
 ## Example: Parallel Processling
