@@ -1,4 +1,5 @@
 import rx
+import uuid
 from rx import operators
 from rx import Observable
 from abc import abstractmethod
@@ -50,13 +51,26 @@ class Pipeline():
     ## USAGE
     ##############################################################################
 
+    @class_or_instancemethod
     def pipe(self, *pipelines):
-        parent = self
-        return type(
-            f"ParentPipelineInjected_{id(self)}",
-            (Pipeline,),
-            {'_operation': lambda self: rx.pipe(parent._operation(), *[p._operation() for p in pipelines])}
-        )()
+        
+        # called as instance method
+        if not isinstance(self, type):
+            parent = self
+            return type(
+                f"Pipeline_{id(self)}",
+                (Pipeline,),
+                {'_operation': lambda self: rx.pipe(parent._operation(), *[p._operation() for p in pipelines])}
+            )()
+
+        # called as class method
+        else:
+            return type(
+                f"Pipeline_{uuid.uuid4().hex}",
+                (Pipeline,),
+                {'_operation': lambda self: rx.pipe(*[p._operation() for p in pipelines])}
+            )()
+
 
     def __call__(self, *args, subscribe=None):
         if len(args) == 1 and type(args[0]) == Observable:

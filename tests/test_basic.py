@@ -36,7 +36,10 @@ def test_basic():
     pipeline(rx.from_([1,4,2,5,2]), subscribe=lambda x: acc.append(x))
     assert acc == [12]
 
-    # compose pipelines
+    # compose pipelines from instance
     mul2 = Multiply(2)
     mul4 = mul2.pipe(mul2)
     assert mul4(2) == 8
+
+    # compose pipelines from class
+    assert Pipeline.pipe(mul2, mul2)(2) == 8
