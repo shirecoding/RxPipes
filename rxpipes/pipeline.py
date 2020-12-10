@@ -15,7 +15,7 @@ class Pipeline():
             def f(*_args, **_kwargs):
                 return self._create_operator_class(op, *_args, **_kwargs)
             return f
-        for op in [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]:
+        for op in [ x for x in dir(operators) if x[0] != '_' and x[0].islower() and x not in ['pipe'] ]:
             setattr(self, op, _make_operator_function(op))
 
         # call user setup
@@ -50,6 +50,14 @@ class Pipeline():
     ## USAGE
     ##############################################################################
 
+    def pipe(self, *pipelines):
+        parent = self
+        return type(
+            f"ParentPipelineInjected_{id(self)}",
+            (Pipeline,),
+            {'_operation': lambda self: rx.pipe(parent._operation(), *[p._operation() for p in pipelines])}
+        )()
+
     def __call__(self, *args, subscribe=None):
         if len(args) == 1 and type(args[0]) == Observable:
             if not subscribe:
@@ -65,6 +73,3 @@ class Pipeline():
                 self._operation(),
                 operators.to_list()
             ).run()
-
-    def subscribe(self, *args, **kwargs):
-        return self.obs.subscribe(*args, **kwargs)
