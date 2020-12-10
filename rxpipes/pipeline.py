@@ -6,20 +6,20 @@ from toolz import compose
 from .utils import class_or_instancemethod
 import types
 
-# injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
-injectable_operations = [ 'map', 'max' ]
+_injectable_operations = [ x for x in dir(operators) if x[0] != '_' and x[0].islower() ]
 
 class Pipeline():
 
     def __init__(self, *args, **kwargs):
 
-        # # inject operations - DOES NOT WORK, LAST OPERATION OVERWRITES EVERYTHING
-        # for op in injectable_operations:
-        #     setattr(
-        #         self,
-        #         op,
-        #         lambda *_args, **_kwargs: self._create_operator_class(op, *_args, **_kwargs)
-        #     )
+        # inject operations
+        def _make_operator_function(op):
+            def f(*_args, **_kwargs):
+                return self._create_operator_class(op, *_args, **_kwargs)
+            return f
+
+        for op in injectable_operations:
+            setattr(self, op, _make_operator_function(op))
 
         # call user setup
         self.setup(*args, **kwargs)
@@ -44,20 +44,10 @@ class Pipeline():
     def _create_operator_class(self, op, *args, **kwargs):
         parent = self
         return type(
-            f"Class_{op}",
+            f"ParentPipelineInjected_{op}",
             (Pipeline,),
             {'_operation': lambda self: rx.pipe(parent._operation(), getattr(operators, op)(*args, **kwargs))}
         )()
-
-    ##############################################################################
-    ## Extend
-    ##############################################################################
-
-    def map(self, *args, **kwargs):
-        return self._create_operator_class('map', *args, **kwargs)
-
-    def max(self, *args, **kwargs):
-        return self._create_operator_class('max', *args, **kwargs)
 
     ##############################################################################
     ## USAGE
