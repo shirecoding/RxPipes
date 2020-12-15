@@ -2,10 +2,13 @@ import rx
 import uuid
 from rx import operators
 from rx import Observable
+from rx.subject import Subject, ReplaySubject
 from abc import abstractmethod
 from toolz import compose
 from .utils import class_or_instancemethod
 import types
+import logging
+log = logging.getLogger(__name__)
 
 class Pipeline():
 
@@ -79,11 +82,11 @@ class Pipeline():
             {'_operation': lambda self: operators.map(f)}
         )()
 
-    def __call__(self, *args, subscribe=None):
-        if len(args) == 1 and type(args[0]) == Observable:
+    def __call__(self, *args, subscribe=None, error=lambda e: log.error(e), completed=lambda: log.info('completed')):
+        if len(args) == 1 and type(args[0]) in [ Observable, Subject, ReplaySubject ]:
             if not subscribe:
                 raise Exception("Error: subscribe kwargs is required when arg is an Observable")
-            return args[0].pipe(self._operation()).subscribe(subscribe)
+            return args[0].pipe(self._operation()).subscribe(on_next=subscribe, on_error=error, on_completed=completed)
         elif len(args) == 1:
             if type(args[0]) in [list, tuple, set]:
                 return rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
