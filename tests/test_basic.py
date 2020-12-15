@@ -50,3 +50,11 @@ def test_basic():
 
     # create pipeline from lambda
     assert Pipeline.from_lambda(lambda x: x*2)(2) == 4
+
+    # test buffer
+    res = []
+    Multiply(2) \
+    .buffer_with_count(3) \
+    .map(lambda xs: len(xs)) \
+    (rx.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14), subscribe=lambda x: res.append(x))
+    assert res == [3, 3, 3, 3, 2]
