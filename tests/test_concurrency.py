@@ -14,7 +14,12 @@ def intense_calculation(value):
 
 def test_concurrency():
 
-    # test ScheduleEach
+    # test ScheduleEach - use set as order is not preserved
+    res = Pipeline.from_lambda(lambda x: x) \
+    .pipe(ScheduleEach(intense_calculation, pool_scheduler)) \
+    ([1,2,3,4,5,6,7,8,9,10,11,12,13,14])
+    assert set(res) == {1,2,3,4,5,6,7,8,9,10,11,12,13,14}
+
     res = set()
     Pipeline.from_lambda(lambda x: x) \
     .pipe(ScheduleEach(intense_calculation, pool_scheduler)) \
