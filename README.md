@@ -8,6 +8,9 @@ A thin wrapper around RxPy for data-flow programming.
 git clone https://github.com/shirecoding/RxPipes.git
 cd RxPipes
 pip3 install ./
+
+# install frmo pypi
+pip install rxpipes
 ```
 
 ## Example: Static Data
