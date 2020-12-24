@@ -62,28 +62,24 @@ x = mul2(rx.interval(1), subscribe=lambda x: print(x)) # -> 0, 2, 4, 6, ....
 x.dispose() # unsubscribe to observable
 ```
 
-
-
------------- NOT WORKING YET ---------------------
-
-
-
 ## Example: Parallel Processling
 
 ```python
-mul2 = Pipeline.from_(lambda x: 2*x)
+import multiprocessing
+from rx.scheduler import ThreadPoolScheduler
 
-Pipeline.parallel(
-    mul2,
-    mul2
-)(2, 4) # -> [4, 8]
+optimal_thread_count = multiprocessing.cpu_count()
+pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
 
-import rx
+def intense_calculation(value):
+    time.sleep(1)
+    return value
 
-Pipeline.parallel(
-    mul2,
-    mul2
-)(rx.of(2, 4)) # -> [4, 8]
+Multiply(1).pipe(
+    Parallel(intense_calculation, pool_scheduler)
+)([1,2,3,4,5,6])
+
+# -> [[1,2,3,4,5,6]]
 ```
 
 ## Example: Image Processing Pipeline
