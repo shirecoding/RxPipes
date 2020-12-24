@@ -83,16 +83,21 @@ class Pipeline():
         )()
 
     def __call__(self, *args, subscribe=None, error=lambda e: log.error(e), completed=lambda: log.info('completed')):
-        if len(args) == 1 and type(args[0]) in [ Observable, Subject, ReplaySubject ]:
-            if not subscribe:
-                raise Exception("Error: subscribe kwargs is required when arg is an Observable")
-            return args[0].pipe(self._operation()).subscribe(on_next=subscribe, on_error=error, on_completed=completed)
-        elif len(args) == 1:
-            if type(args[0]) in [list, tuple, set]:
+        
+        if len(args) == 1:
+            # observable is passed in
+            if type(args[0]) in [ Observable, Subject, ReplaySubject ]:
+                if not subscribe:
+                    raise Exception("Error: subscribe kwargs is required when arg is an Observable")
+                return args[0].pipe(self._operation()).subscribe(on_next=subscribe, on_error=error, on_completed=completed)
+            # fixed length iterable is passed in
+            elif type(args[0]) in [list, tuple, set]:
                 return rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
+            # constant or others
             else:
                 return rx.of(*args).pipe(self._operation()).run()
         else:
+            # multiple constants or others
             return rx.of(*args).pipe(
                 self._operation(),
                 operators.to_list()
