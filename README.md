@@ -9,7 +9,7 @@ git clone https://github.com/shirecoding/RxPipes.git
 cd RxPipes
 pip3 install ./
 
-# install frmo pypi
+# install from pypi
 pip install rxpipes
 ```
 
