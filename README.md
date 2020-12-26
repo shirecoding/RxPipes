@@ -89,19 +89,38 @@ Multiply(1).pipe(
 ## Example: Image Processing Pipeline
 
 ```python
-preprocessing = Pipeline.pipe(
-    Rescale2D(50, 50),
-    Normalize(0, 1),
-    Pipeline.from_(lambda x: np.expand_dims(x, axis=-1))
-)
+class Normalize(Pipeline):
 
-postprocessing = Pipeline.pipe(
-    Pipeline.from_(lambda x: np.argmax(x, axis=-1))
-)
+    def setup(self, low, high):
+        self.low = low
+        self.high = high
 
-predict = Pipeline.pipe(
-    preprocessing,
-    Pipeline.from_(lambda x: model.predict(x)),
-    postprocessing
+    def operation(self, x):
+        _max = x.max()
+        _min = x.min()
+        factor =  ((self.high - self.low) + 1e-12)/ ((_max - _min) + 1e-12)
+        return (x - _min) * factor + self.low
+
+class Rescale(Pipeline):
+
+    def setup(self, shape):
+        self.shape = shape
+
+    def operation(self, x):
+        import cv2
+        return cv2.resize(x.astype('float32'), self.shape)
+
+p = Pipeline.pipe(
+    Normalize(0,1),
+    Rescale((3,3))
 )
+im = np.arange(5*5).reshape((5,5))
+
+p(im)
+
+# array([[0.08333334, 0.15277778, 0.22222222],
+#        [0.43055555, 0.5       , 0.5694444 ],
+#        [0.7777778 , 0.8472222 , 0.9166667 ]], dtype=float32)
 ```
+
+
