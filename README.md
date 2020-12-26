@@ -59,6 +59,7 @@ mul2(2) # -> 4
 
 ```python
 import rx
+from rxpipes import Pipeline
 
 mul2 = Pipeline.from_lambda(lambda x: 2*x)
 x = mul2(rx.interval(1), subscribe=lambda x: print(x)) # -> 0, 2, 4, 6, ....
@@ -71,6 +72,7 @@ x.dispose() # unsubscribe to observable
 ```python
 import multiprocessing
 from rx.scheduler import ThreadPoolScheduler
+from rxpipes.concurrency import Parallel
 
 optimal_thread_count = multiprocessing.cpu_count()
 pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
@@ -89,6 +91,9 @@ Multiply(1).pipe(
 ## Example: Image Processing Pipeline
 
 ```python
+from rxpipes import Pipeline
+import numpy as np
+
 class Normalize(Pipeline):
 
     def setup(self, low, high):
