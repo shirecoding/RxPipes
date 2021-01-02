@@ -1,7 +1,19 @@
 import rx
+import pytest
 from rxpipes import Pipeline
 
+@pytest.mark.report(
+    specification="""
+    """,
+    procedure="""
+    """,
+    expected="""
+    """
+)
 def test_basic():
+    """
+    Basic tests
+    """
 
     # create pipeline
     class Multiply(Pipeline):

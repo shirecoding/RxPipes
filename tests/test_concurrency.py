@@ -1,3 +1,4 @@
+import pytest
 import rx
 from rxpipes import Pipeline
 from rxpipes.concurrency import ScheduleEach, Parallel
@@ -12,7 +13,18 @@ def intense_calculation(value):
     time.sleep(0.01)
     return value
 
+@pytest.mark.report(
+    specification="""
+    """,
+    procedure="""
+    """,
+    expected="""
+    """
+)
 def test_concurrency():
+    """
+    Concurrency tests
+    """
 
     # test ScheduleEach - use set as order is not preserved
     res = Pipeline.from_lambda(lambda x: x) \
