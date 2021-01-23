@@ -1,24 +1,31 @@
 import rx
 from rx import operators as ops
+
 from rxpipes import Pipeline
+
 
 class ScheduleEach(Pipeline):
     """
-    Maps each element using operation on scheduler. Order is not preserved. 
+    Maps each element using operation on scheduler. Order is not preserved.
     """
-    
+
     def setup(self, operation, scheduler):
         self.scheduler = scheduler
         self.operation = operation
-    
+
     def _operation(self):
         return rx.pipe(
-            ops.flat_map(lambda x: rx.of(x).pipe(ops.map(self.operation), ops.subscribe_on(self.scheduler)))
+            ops.flat_map(
+                lambda x: rx.of(x).pipe(
+                    ops.map(self.operation), ops.subscribe_on(self.scheduler)
+                )
+            )
         )
+
 
 class Parallel(ScheduleEach):
     """
-    Maps each element using operation on scheduler. Order is preserved. 
+    Maps each element using operation on scheduler. Order is preserved.
     """
 
     def setup(self, operation, scheduler):
@@ -34,5 +41,5 @@ class Parallel(ScheduleEach):
         return rx.pipe(
             super()._operation(),
             ops.to_iterable(),
-            ops.map(lambda xs: [ y[1] for y in sorted(xs, key=lambda x: x[0]) ])
+            ops.map(lambda xs: [y[1] for y in sorted(xs, key=lambda x: x[0])]),
         )
