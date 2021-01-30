@@ -5,8 +5,6 @@ import pytest
 import rx
 from rx.scheduler import ThreadPoolScheduler
 
-from rxpipes import Pipeline
-from rxpipes.concurrency import Parallel, ScheduleEach
 
 optimal_thread_count = multiprocessing.cpu_count()
 pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
@@ -29,6 +27,9 @@ def test_concurrency():
     """
     Concurrency tests
     """
+
+    from rxpipes import Pipeline
+    from rxpipes.concurrency import Parallel, ScheduleEach
 
     # test ScheduleEach - use set as order is not preserved
     res = Pipeline.from_lambda(lambda x: x).pipe(
