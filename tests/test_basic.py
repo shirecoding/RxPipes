@@ -1,6 +1,7 @@
 import pytest
 import rx
 
+
 @pytest.mark.report(
     specification="""
     """,
