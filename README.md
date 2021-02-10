@@ -24,8 +24,9 @@ class Multiply(Pipeline):
     def setup(self, mul):
         self.mul = 2
     
-    def operation(self, x):
-        return x * self.mul
+    def transform(self):
+        from rx import operators as ops
+        return ops.map(lambda x: x * self.mul)
 
 # execute a pipeline
 Multiply(2)(2) # -> 4
@@ -100,20 +101,30 @@ class Normalize(Pipeline):
         self.low = low
         self.high = high
 
-    def operation(self, x):
-        _max = x.max()
-        _min = x.min()
-        factor =  ((self.high - self.low) + 1e-12)/ ((_max - _min) + 1e-12)
-        return (x - _min) * factor + self.low
+    def transform(self):
+        from rx import operators as ops
+
+        def _f(x):
+            _max = x.max()
+            _min = x.min()
+            factor =  ((self.high - self.low) + 1e-12)/ ((_max - _min) + 1e-12)
+            return (x - _min) * factor + self.low
+
+        return ops.map(_f)
 
 class Rescale(Pipeline):
 
     def setup(self, shape):
         self.shape = shape
 
-    def operation(self, x):
+    def transform(self):
         import cv2
-        return cv2.resize(x.astype('float32'), self.shape)
+        from rx import operators as ops
+        
+        def _f(x):
+            return cv2.resize(x.astype('float32'), self.shape)
+
+        return ops.map(_f)
 
 p = Pipeline.pipe(
     Normalize(0,1),

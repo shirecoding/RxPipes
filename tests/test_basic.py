@@ -1,5 +1,8 @@
 import pytest
 import rx
+import logging
+
+log = logging.getLogger(__name__)
 
 
 @pytest.mark.report(
@@ -22,8 +25,10 @@ def test_basic():
         def setup(self, mul):
             self.mul = mul
 
-        def operation(self, x):
-            return x * self.mul
+        def transform(self):
+            from rx import operators as ops
+
+            return ops.map(lambda x: x * self.mul)
 
     # execute a pipeline
     assert Multiply(2)(2) == 4
@@ -62,3 +67,66 @@ def test_basic():
         subscribe=lambda x: res.append(x),
     )
     assert res == [3, 3, 3, 3, 2]
+
+
+@pytest.mark.report(
+    specification="""
+    """,
+    procedure="""
+    """,
+    expected="""
+    """,
+)
+def test_intermediate():
+    """
+    Intermediate tests
+    """
+
+    from rxpipes import Pipeline
+    import numpy as np
+
+    class Normalize(Pipeline):
+        def setup(self, low, high):
+            self.low = low
+            self.high = high
+
+        def transform(self):
+            from rx import operators as ops
+
+            def _f(x):
+                _max = x.max()
+                _min = x.min()
+                factor = ((self.high - self.low) + 1e-12) / ((_max - _min) + 1e-12)
+                return (x - _min) * factor + self.low
+
+            return ops.map(_f)
+
+    ndarr = np.array([1, 2, 3])
+    res = Normalize(0, 1)([ndarr])[0]
+    assert res.min() >= 0
+    assert res.max() <= 1 + 1e-12
+
+    class Rescale(Pipeline):
+        def setup(self, shape):
+            self.shape = shape
+
+        def transform(self):
+            import cv2
+            from rx import operators as ops
+
+            def _f(x):
+                return cv2.resize(x.astype("float32"), self.shape)
+
+            return ops.map(_f)
+
+    ndarr = np.arange(64 * 64).reshape((64, 64))
+    res = Rescale((32, 32))([ndarr])[0]
+    assert res.shape == (32, 32)
+
+    pipeline = Pipeline.pipe(Normalize(0, 1), Rescale((3, 3)))
+    ndarr = np.arange(5 * 5).reshape((5, 5))
+    res = pipeline([ndarr])[0]
+
+    assert res.shape == (3, 3)
+    assert res.min() >= 0
+    assert res.max() <= 1 + 1e-12

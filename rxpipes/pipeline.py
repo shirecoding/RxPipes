@@ -1,7 +1,7 @@
 import logging
-import types
 import uuid
 from abc import abstractmethod
+from typing import Callable
 
 import rx
 from rx import Observable, operators
@@ -40,7 +40,7 @@ class Pipeline:
     def setup(self, *args, **kwargs):
         pass
 
-    def operation(self, *args, **kwargs):
+    def transform(self, *args, **kwargs):
         pass
 
     ##############################################################################
@@ -48,7 +48,7 @@ class Pipeline:
     ##############################################################################
 
     def _operation(self):
-        return operators.map(self.operation)
+        return operators.pipe(self.transform())
 
     def _create_operator_class(self, op, *args, **kwargs):
         parent = self
