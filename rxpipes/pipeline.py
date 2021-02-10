@@ -1,7 +1,7 @@
 import logging
 import uuid
 from abc import abstractmethod
-from typing import Callable
+from typing import Iterable
 
 import rx
 from rx import Observable, operators
@@ -112,7 +112,7 @@ class Pipeline:
 
         if len(args) == 1:
             # observable is passed in
-            if type(args[0]) in [Observable, Subject, ReplaySubject]:
+            if isinstance(args[0], rx.core.typing.Observable):
                 if not subscribe:
                     raise Exception(
                         "Error: subscribe kwargs is required when arg is an Observable"
@@ -125,7 +125,7 @@ class Pipeline:
                     )
                 )
             # fixed length iterable is passed in
-            elif type(args[0]) in [list, tuple, set]:
+            elif isinstance(args[0], Iterable):
                 return (
                     rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
                 )
