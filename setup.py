@@ -2,8 +2,7 @@ from distutils.core import setup
 
 from setuptools import find_packages
 
-from rxpipes import __version__
-
+exec(open('rxpipes/version.py').read())
 setup(
     name="rxpipes",
     version=__version__,
