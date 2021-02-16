@@ -3,6 +3,10 @@
 # RxPipes
 A thin wrapper around RxPy for data-flow programming.
 
+## Documentation
+
+- [readthedocs](https://rxpipes.readthedocs.io/en/latest/)
+
 ## Install
 
 ```bash
