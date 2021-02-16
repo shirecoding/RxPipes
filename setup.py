@@ -10,7 +10,10 @@ setup(
     author="shirecoding",
     author_email="shirecoding@gmail.com",
     install_requires=["rx", "toolz"],
-    extras_require={"test": ["numpy", "cv2"]},
+    extras_require={
+        "test": ["numpy", "cv2"],
+        "docs": ["mkdocs", "mkdocstrings"]
+    },
     url="https://github.com/shirecoding/RxPipes",
     download_url=f"https://github.com/shirecoding/ModelMaker/archive/{__version__}.tar.gz",
     long_description=open("README.md").read(),
