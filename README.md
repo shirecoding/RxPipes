@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/rxpipes/badge/?version=latest)](https://rxpipes.readthedocs.io/en/latest/?badge=latest)
+
 # RxPipes
 A thin wrapper around RxPy for data-flow programming.
 

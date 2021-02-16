@@ -9,9 +9,19 @@ setup(
     version=__version__,
     author="shirecoding",
     author_email="shirecoding@gmail.com",
-    install_requires=["rx", "toolz"],
+    install_requires=[
+        "rx",
+        "toolz"
+    ],
     extras_require={
-        "test": ["numpy", "cv2"],
+        "test": [
+            "pytest",
+            "pytest-cov",
+            "pytest-html",
+            "pytest-metadata",
+            "numpy",
+            "cv2"
+        ],
         "docs": ["mkdocs", "mkdocstrings"]
     },
     url="https://github.com/shirecoding/RxPipes",
