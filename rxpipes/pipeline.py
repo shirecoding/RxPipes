@@ -1,7 +1,7 @@
 import logging
 import uuid
 from abc import abstractmethod
-from typing import Iterable
+from typing import Iterable, Callable, Any, Optional
 
 import rx
 from rx import Observable, operators
@@ -14,7 +14,15 @@ log = logging.getLogger(__name__)
 
 
 class Pipeline:
-    def __init__(self, *args, **kwargs):
+    
+    def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
+        """
+        Pipeline
+
+        Args:
+            args: args passed to user defined setup
+            kwargs: kwargs passed to user defined setup
+        """
 
         # inject operations
         def _make_operator_function(op):
@@ -37,13 +45,22 @@ class Pipeline:
     ## USER DEFINED METHODS
     ##############################################################################
 
-    def setup(self, *args, **kwargs):
-        """ Overwrite setup
+    def setup(self, *args: Optional[Any], **kwargs: Optional[Any]):
+        """
+        Override this setup function to implement custom functionality when subclassing Pipeline
+
+        Args:
+            args: user defined args
+            kwargs: user defined kwards
         """
         pass
 
-    def transform(self, *args, **kwargs):
-        """ Overwrite transform
+    def transform(self) -> Callable[[rx.typing.Observable], rx.typing.Observable]:
+        """
+        Override this transform function to implement custom functionality when subclassing Pipeline
+
+        Returns:
+            a function mapping an observable to another
         """
         pass
 
@@ -72,7 +89,9 @@ class Pipeline:
 
     @class_or_instancemethod
     def pipe(self, *pipelines: 'Pipeline') -> 'Pipeline':
-        """ pipe
+        """
+        
+        Can be used as a class or instance method to create a new pipeline chain
 
         Args:
             pipelines: variable number of pipelines
