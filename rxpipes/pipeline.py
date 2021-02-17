@@ -52,7 +52,7 @@ class Pipeline:
             args: user defined args
             kwargs: user defined kwards
         """
-        pass
+        return
 
     def transform(self) -> Callable[[rx.typing.Observable], rx.typing.Observable]:
         """
@@ -61,7 +61,7 @@ class Pipeline:
         Returns:
             a function mapping an observable to another
         """
-        pass
+        return
 
     ##############################################################################
     ## INTERNALS
