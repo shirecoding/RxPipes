@@ -10,12 +10,12 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - deps-{{ .Branch }}-{{ checksum "setup.py"  }}
+            - deps0-{{ .Branch }}-{{ checksum "setup.py"  }}
       - run:
           command: pip install .[test]
           name: Install
       - save_cache:
-          key: deps-{{ .Branch }}-{{ checksum "setup.py" }}
+          key: deps0-{{ .Branch }}-{{ checksum "setup.py" }}
           paths:
             - /home/circleci/.local/lib/
       - run:
