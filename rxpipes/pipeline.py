@@ -1,7 +1,7 @@
 import logging
 import uuid
 from abc import abstractmethod
-from typing import Iterable, Callable, Any, Optional
+from typing import Any, Callable, Iterable, Optional
 
 import rx
 from rx import Observable, operators
@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class Pipeline:
-    
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
         """
         Pipeline
@@ -88,9 +87,9 @@ class Pipeline:
     ##############################################################################
 
     @class_or_instancemethod
-    def pipe(self, *pipelines: 'Pipeline') -> 'Pipeline':
+    def pipe(self, *pipelines: "Pipeline") -> "Pipeline":
         """
-        
+
         Can be used as a class or instance method to create a new pipeline chain
 
         Args:

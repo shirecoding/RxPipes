@@ -6,10 +6,10 @@
 from rxpipes import Pipeline
 
 class Multiply(Pipeline):
-    
+
     def setup(self, mul):
         self.mul = 2
-    
+
     def transform(self):
         from rx import operators as ops
         return ops.map(lambda x: x * self.mul)

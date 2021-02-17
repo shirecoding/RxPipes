@@ -29,7 +29,7 @@ class Rescale(Pipeline):
     def transform(self):
         import cv2
         from rx import operators as ops
-        
+
         def _f(x):
             return cv2.resize(x.astype('float32'), self.shape)
 

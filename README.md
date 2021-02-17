@@ -26,10 +26,10 @@ from rxpipes import Pipeline
 
 # create pipeline
 class Multiply(Pipeline):
-    
+
     def setup(self, mul):
         self.mul = 2
-    
+
     def transform(self):
         from rx import operators as ops
         return ops.map(lambda x: x * self.mul)
@@ -126,7 +126,7 @@ class Rescale(Pipeline):
     def transform(self):
         import cv2
         from rx import operators as ops
-        
+
         def _f(x):
             return cv2.resize(x.astype('float32'), self.shape)
 
@@ -144,5 +144,3 @@ p(im)
 #        [0.43055555, 0.5       , 0.5694444 ],
 #        [0.7777778 , 0.8472222 , 0.9166667 ]], dtype=float32)
 ```
-
-
