@@ -107,7 +107,7 @@ class Pipeline:
         *args,
         subscribe=None,
         error=lambda e: log.error(e),
-        completed=lambda: log.info("completed"),
+        completed=lambda: log.debug("completed"),
     ):
 
         if len(args) == 1:

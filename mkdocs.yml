@@ -1,2 +1,26 @@
 site_name: RxPipes
-theme: readthedocs
+theme:
+  name: readthedocs
+  collapse_navigation: false
+  titles_only: true
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: "google"
+          rendering:
+            show_root_heading: yes
+            show_category_heading: yes
+extra_css:
+  - css/mkdocstrings_rtd.css
+nav:
+  - About: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+  - Library:
+    - pipeline: rxpipes/pipeline.md
+    - concurrency: rxpipes/concurrency.md
+  - Examples:
+    - TODO: todo.md
