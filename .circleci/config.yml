@@ -1,28 +1,23 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@0.2.1
+  python: circleci/python@1.3.2
 
 jobs:
-  build-and-test:
+  buildtest:
     executor: python/default
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - deps0-{{ .Branch }}-{{ checksum "setup.py"  }}
+      - python/install-packages:
+          args: .[test]
+          pip-dependency-file: setup.py
+          pkg-manager: pip-dist
       - run:
-          command: pip install .[test]
-          name: Install
-      - save_cache:
-          key: deps0-{{ .Branch }}-{{ checksum "setup.py" }}
-          paths:
-            - /home/circleci/.local/lib/
-      - run:
-          command: pytest tests
+          command: |
+            pytest tests
           name: Test
 
 workflows:
   main:
     jobs:
-      - build-and-test
+      - buildtest
