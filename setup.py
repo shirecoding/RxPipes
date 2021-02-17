@@ -16,7 +16,7 @@ setup(
             "pytest-html",
             "pytest-metadata",
             "numpy",
-            "cv2",
+            "opencv-python",
         ],
         "docs": ["mkdocs", "mkdocstrings", "mkdocs-material"],
     },
