@@ -8,11 +8,11 @@ jobs:
     executor: python/default
     steps:
       - checkout
-      - python/load-cache
+      # - python/load-cache
       - run:
           command: pip install .[test]
           name: Install
-      - python/save-cache
+      # - python/save-cache
       - run:
           command: pytest tests
           name: Test
