@@ -10,6 +10,7 @@ class ScheduleEach(Pipeline):
     """
 
     def setup(self, operation, scheduler):
+        """"""
         self.scheduler = scheduler
         self.operation = operation
 
@@ -29,6 +30,7 @@ class Parallel(ScheduleEach):
     """
 
     def setup(self, operation, scheduler):
+        """"""
         self.counter = 0
 
         def f(x):
