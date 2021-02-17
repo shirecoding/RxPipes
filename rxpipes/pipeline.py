@@ -71,7 +71,15 @@ class Pipeline:
     ##############################################################################
 
     @class_or_instancemethod
-    def pipe(self, *pipelines):
+    def pipe(self, *pipelines: 'Pipeline') -> 'Pipeline':
+        """ pipe
+
+        Args:
+            pipelines: variable number of pipelines
+
+        Returns:
+            newly composed Pipeline instance
+        """
 
         # called as instance method
         if not isinstance(self, type):

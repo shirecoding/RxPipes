@@ -1,27 +1,34 @@
 site_name: RxPipes
 theme:
-  name: readthedocs
-  collapse_navigation: false
-  titles_only: true
-  prev_next_buttons_location: none
+  name: material
+  features:
+    - navigation.instant
+    - nagivation.tabs
+    - navigation.sections
+    - navigation.expand
 plugins:
+  - search
   - mkdocstrings:
       handlers:
         python:
           selection:
             docstring_style: "google"
           rendering:
-            show_root_heading: yes
-            show_category_heading: yes
+            show_root_heading: no
+            show_category_heading: no
 extra_css:
-  - css/mkdocstrings_rtd.css
+  - css/mkdocstrings.css
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
 nav:
   - Home: index.md
   - Getting Started:
     - Installation: installation.md
     - Quick Start: quickstart.md
-  - Library:
-    - pipeline: rxpipes/pipeline.md
-    - concurrency: rxpipes/concurrency.md
+  - Reference:
+      rxpipes:
+        - pipeline.py: rxpipes/pipeline.md
+        - concurrency.py: rxpipes/concurrency.md
   - Examples:
     - TODO: todo.md

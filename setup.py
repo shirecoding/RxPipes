@@ -18,7 +18,7 @@ setup(
             "numpy",
             "cv2",
         ],
-        "docs": ["mkdocs", "mkdocstrings"],
+        "docs": ["mkdocs", "mkdocstrings", "mkdocs-material"],
     },
     url="https://github.com/shirecoding/RxPipes",
     download_url=f"https://github.com/shirecoding/ModelMaker/archive/{__version__}.tar.gz",
