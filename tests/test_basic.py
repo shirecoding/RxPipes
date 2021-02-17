@@ -1,6 +1,7 @@
+import logging
+
 import pytest
 import rx
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -82,8 +83,9 @@ def test_intermediate():
     Intermediate tests
     """
 
-    from rxpipes import Pipeline
     import numpy as np
+
+    from rxpipes import Pipeline
 
     class Normalize(Pipeline):
         def setup(self, low, high):

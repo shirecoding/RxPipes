@@ -1,2 +1,2 @@
-from .version import __version__
 from .pipeline import Pipeline
+from .version import __version__

@@ -2,16 +2,13 @@ from distutils.core import setup
 
 from setuptools import find_packages
 
-exec(open('rxpipes/version.py').read())
+exec(open("rxpipes/version.py").read())
 setup(
     name="rxpipes",
     version=__version__,
     author="shirecoding",
     author_email="shirecoding@gmail.com",
-    install_requires=[
-        "rx",
-        "toolz"
-    ],
+    install_requires=["rx", "toolz"],
     extras_require={
         "test": [
             "pytest",
@@ -19,9 +16,9 @@ setup(
             "pytest-html",
             "pytest-metadata",
             "numpy",
-            "cv2"
+            "cv2",
         ],
-        "docs": ["mkdocs", "mkdocstrings"]
+        "docs": ["mkdocs", "mkdocstrings"],
     },
     url="https://github.com/shirecoding/RxPipes",
     download_url=f"https://github.com/shirecoding/ModelMaker/archive/{__version__}.tar.gz",

@@ -3,6 +3,7 @@ theme:
   name: readthedocs
   collapse_navigation: false
   titles_only: true
+  prev_next_buttons_location: none
 plugins:
   - mkdocstrings:
       handlers:
@@ -15,7 +16,7 @@ plugins:
 extra_css:
   - css/mkdocstrings_rtd.css
 nav:
-  - About: index.md
+  - Home: index.md
   - Getting Started:
     - Installation: installation.md
     - Quick Start: quickstart.md

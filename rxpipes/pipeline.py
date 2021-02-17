@@ -38,9 +38,13 @@ class Pipeline:
     ##############################################################################
 
     def setup(self, *args, **kwargs):
+        """ Overwrite setup
+        """
         pass
 
     def transform(self, *args, **kwargs):
+        """ Overwrite transform
+        """
         pass
 
     ##############################################################################

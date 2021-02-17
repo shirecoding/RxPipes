@@ -5,7 +5,6 @@ import pytest
 import rx
 from rx.scheduler import ThreadPoolScheduler
 
-
 optimal_thread_count = multiprocessing.cpu_count()
 pool_scheduler = ThreadPoolScheduler(optimal_thread_count)
 
