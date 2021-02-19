@@ -143,13 +143,15 @@ class Pipeline:
             Pipeline class with transform method injected with op
         """
 
-        setattr(
-            cls,
-            "transform",
-            lambda self: getattr(operators, op)(*self.args, **self.kwargs),
+        return type(
+            "Pipeline",
+            (Pipeline,),
+            {
+                "transform": lambda self: getattr(operators, op)(
+                    *self.args, **self.kwargs
+                ),
+            },
         )
-
-        return cls
 
     @classmethod
     def from_lambda(cls, f: Callable) -> "Pipeline":
