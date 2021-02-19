@@ -1,7 +1,7 @@
 import logging
 import uuid
 from abc import abstractmethod
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Type
 
 import rx
 from rx import Observable, operators
@@ -52,7 +52,8 @@ class Pipeline:
             args: user defined args
             kwargs: user defined kwards
         """
-        return
+        self.args = args
+        self.kwargs = kwargs
 
     def transform(self) -> Callable[[rx.typing.Observable], rx.typing.Observable]:
         """
@@ -125,12 +126,43 @@ class Pipeline:
             )()
 
     @classmethod
-    def from_lambda(cls, f):
-        return type(
-            f"Pipeline_{uuid.uuid4().hex}",
-            (Pipeline,),
-            {"_operation": lambda self: operators.map(f)},
-        )()
+    def from_operator(cls, op: str) -> Type["Pipeline"]:
+        """
+        Create a new Pipeline class based on existing rx.operators
+
+        Usage:
+            ```python
+            Map = Pipeline.from_operator('map')
+            Map(lambda x: 2*x)(2) # 4
+            ```
+
+        Args:
+            op: string representation of an operator from rx.operators
+
+        Returns:
+            Pipeline class with transform method injected with op
+        """
+
+        setattr(
+            cls,
+            "transform",
+            lambda self: getattr(operators, op)(*self.args, **self.kwargs),
+        )
+
+        return cls
+
+    @classmethod
+    def from_lambda(cls, f: Callable) -> "Pipeline":
+        """
+        Convenience method for creating a Pipeline from the map operator and instantiating it with function f
+
+        Args:
+            f: function for the map operator
+
+        Returns:
+            Pipeline instance with injected map operator in transform and instantiated with f
+        """
+        return cls.from_operator("map")(f)
 
     def __call__(
         self,
