@@ -14,12 +14,10 @@ class ScheduleEach(Pipeline):
         self.scheduler = scheduler
         self.operation = operation
 
-    def _operation(self):
-        return rx.pipe(
-            ops.flat_map(
-                lambda x: rx.of(x).pipe(
-                    ops.map(self.operation), ops.subscribe_on(self.scheduler)
-                )
+    def transform(self):
+        return ops.flat_map(
+            lambda x: rx.of(x).pipe(
+                ops.map(self.operation), ops.subscribe_on(self.scheduler)
             )
         )
 
@@ -39,9 +37,9 @@ class Parallel(ScheduleEach):
 
         super().setup(f, scheduler)
 
-    def _operation(self):
+    def transform(self):
         return rx.pipe(
-            super()._operation(),
+            super().transform(),
             ops.to_iterable(),
             ops.map(lambda xs: [y[1] for y in sorted(xs, key=lambda x: x[0])]),
         )

@@ -13,7 +13,48 @@ from .utils import class_or_instancemethod
 log = logging.getLogger(__name__)
 
 
+# def pipeline_from_operator_jit(op):
+#     """
+#     Returns a function, when called returns a Pipeline instance piping the parent transform
+#     to the injected operator
+#     """
+#     @class_or_instancemethod
+#     def _f(parent, *args, **kwargs):
+#         if not isinstance(parent, type):
+#             return type(
+#                 "Pipeline",
+#                 (type(parent),),
+#                 {
+#                     "transform": lambda _: rx.pipe(
+#                         parent.transform(), op(*args, **kwargs)
+#                     )
+#                 },
+#             )()
+#         else:
+#             return type(
+#                 "Pipeline",
+#                 (parent,),
+#                 {
+#                     "transform": lambda _: op(*args, **kwargs)
+#                 },
+#             )()
+#     return _f
+
+
 class Pipeline:
+
+    # for op in [
+    #     x
+    #     for x in dir(operators)
+    #     if x[0] != "_" and x[0].islower() and x not in ["pipe"]
+    # ]:
+    #     # setattr(
+    #     #     Pipeline, op, pipeline_from_operator_jit(getattr(operators, op))
+    #     # )
+    #     op = pipeline_from_operator_jit(getattr(operators, op))
+
+    # map = pipeline_from_operator_jit(getattr(operators, 'map'))
+
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
         """
         Pipeline
@@ -23,22 +64,36 @@ class Pipeline:
             kwargs: kwargs passed to user defined setup
         """
 
-        # inject operations
-        def _make_operator_function(op):
-            def f(*_args, **_kwargs):
-                return self._create_operator_class(op, *_args, **_kwargs)
-
-            return f
-
         for op in [
             x
             for x in dir(operators)
             if x[0] != "_" and x[0].islower() and x not in ["pipe"]
         ]:
-            setattr(self, op, _make_operator_function(op))
+            setattr(
+                self, op, self.pipeline_from_operator_jit(self, getattr(operators, op))
+            )
 
         # call user setup
         self.setup(*args, **kwargs)
+
+    def pipeline_from_operator_jit(self, parent, op):
+        """
+        Returns a function, when called returns a Pipeline instance piping the parent transform
+        to the injected operator
+        """
+
+        def _f(*args, **kwargs):
+            return type(
+                "Pipeline",
+                (Pipeline,),
+                {
+                    "transform": lambda _: rx.pipe(
+                        parent.transform(), op(*args, **kwargs)
+                    )
+                },
+            )()
+
+        return _f
 
     ##############################################################################
     ## USER DEFINED METHODS
@@ -71,18 +126,6 @@ class Pipeline:
     def _operation(self):
         return operators.pipe(self.transform())
 
-    def _create_operator_class(self, op, *args, **kwargs):
-        parent = self
-        return type(
-            f"ParentPipelineInjected_{op}",
-            (Pipeline,),
-            {
-                "_operation": lambda self: rx.pipe(
-                    parent._operation(), getattr(operators, op)(*args, **kwargs)
-                )
-            },
-        )()
-
     ##############################################################################
     ## USAGE
     ##############################################################################
@@ -104,11 +147,11 @@ class Pipeline:
         if not isinstance(self, type):
             parent = self
             return type(
-                f"Pipeline_{id(self)}",
+                "Pipeline",
                 (Pipeline,),
                 {
-                    "_operation": lambda self: rx.pipe(
-                        parent._operation(), *[p._operation() for p in pipelines]
+                    "transform": lambda self: rx.pipe(
+                        parent.transform(), *[p.transform() for p in pipelines]
                     )
                 },
             )()
@@ -116,11 +159,11 @@ class Pipeline:
         # called as class method
         else:
             return type(
-                f"Pipeline_{uuid.uuid4().hex}",
+                "Pipeline",
                 (Pipeline,),
                 {
-                    "_operation": lambda self: rx.pipe(
-                        *[p._operation() for p in pipelines]
+                    "transform": lambda self: rx.pipe(
+                        *[p.transform() for p in pipelines]
                     )
                 },
             )()
