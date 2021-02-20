@@ -3,6 +3,7 @@ from typing import Any, Callable, Iterable, Optional, Type
 
 import rx
 from rx import Observable, operators
+from rx.scheduler.eventloop import AsyncIOScheduler
 from rx.subject import Subject
 
 from .utils import class_or_instancemethod
@@ -100,8 +101,9 @@ class Pipeline:
         self,
         *args,
         subscribe=None,
+        scheduler=None,
         error=lambda e: log.error(e),
-        completed=lambda: log.debug("completed"),
+        completed=None,
     ):
 
         if len(args) == 1:
@@ -115,7 +117,10 @@ class Pipeline:
                     args[0]
                     .pipe(self._operation())
                     .subscribe(
-                        on_next=subscribe, on_error=error, on_completed=completed
+                        on_next=subscribe,
+                        on_error=error,
+                        on_completed=completed,
+                        scheduler=scheduler,
                     )
                 )
             # fixed length iterable is passed in
