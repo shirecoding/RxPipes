@@ -44,7 +44,7 @@ mul8(2) # -> 16
 
 ```python
 
-mul2 = Pipeline.from_lambda(lambda x: 2*x)
+mul2 = Pipeline.map(lambda x: 2*x)
 
 mul2(2) # -> 4
 ```
@@ -55,7 +55,7 @@ mul2(2) # -> 4
 import rx
 from rxpipes import Pipeline
 
-mul2 = Pipeline.from_lambda(lambda x: 2*x)
+mul2 = Pipeline.map(lambda x: 2*x)
 x = mul2(rx.interval(1), subscribe=lambda x: print(x)) # -> 0, 2, 4, 6, ....
 
 x.dispose() # unsubscribe to observable

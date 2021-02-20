@@ -59,7 +59,7 @@ def test_basic():
     assert Pipeline.pipe(Multiply(2), Multiply(2))(2) == 8
 
     # create pipeline from lambda
-    assert Pipeline.from_lambda(lambda x: x * 2)(2) == 4
+    assert Pipeline.map(lambda x: x * 2)(2) == 4
 
     # test buffer
     res = []

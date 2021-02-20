@@ -1,60 +1,16 @@
 import logging
-import uuid
-from abc import abstractmethod
 from typing import Any, Callable, Iterable, Optional, Type
 
 import rx
 from rx import Observable, operators
-from rx.subject import ReplaySubject, Subject
-from toolz import compose
+from rx.subject import Subject
 
 from .utils import class_or_instancemethod
 
 log = logging.getLogger(__name__)
 
 
-# def pipeline_from_operator_jit(op):
-#     """
-#     Returns a function, when called returns a Pipeline instance piping the parent transform
-#     to the injected operator
-#     """
-#     @class_or_instancemethod
-#     def _f(parent, *args, **kwargs):
-#         if not isinstance(parent, type):
-#             return type(
-#                 "Pipeline",
-#                 (type(parent),),
-#                 {
-#                     "transform": lambda _: rx.pipe(
-#                         parent.transform(), op(*args, **kwargs)
-#                     )
-#                 },
-#             )()
-#         else:
-#             return type(
-#                 "Pipeline",
-#                 (parent,),
-#                 {
-#                     "transform": lambda _: op(*args, **kwargs)
-#                 },
-#             )()
-#     return _f
-
-
 class Pipeline:
-
-    # for op in [
-    #     x
-    #     for x in dir(operators)
-    #     if x[0] != "_" and x[0].islower() and x not in ["pipe"]
-    # ]:
-    #     # setattr(
-    #     #     Pipeline, op, pipeline_from_operator_jit(getattr(operators, op))
-    #     # )
-    #     op = pipeline_from_operator_jit(getattr(operators, op))
-
-    # map = pipeline_from_operator_jit(getattr(operators, 'map'))
-
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
         """
         Pipeline
@@ -64,36 +20,8 @@ class Pipeline:
             kwargs: kwargs passed to user defined setup
         """
 
-        for op in [
-            x
-            for x in dir(operators)
-            if x[0] != "_" and x[0].islower() and x not in ["pipe"]
-        ]:
-            setattr(
-                self, op, self.pipeline_from_operator_jit(self, getattr(operators, op))
-            )
-
         # call user setup
         self.setup(*args, **kwargs)
-
-    def pipeline_from_operator_jit(self, parent, op):
-        """
-        Returns a function, when called returns a Pipeline instance piping the parent transform
-        to the injected operator
-        """
-
-        def _f(*args, **kwargs):
-            return type(
-                "Pipeline",
-                (Pipeline,),
-                {
-                    "transform": lambda _: rx.pipe(
-                        parent.transform(), op(*args, **kwargs)
-                    )
-                },
-            )()
-
-        return _f
 
     ##############################################################################
     ## USER DEFINED METHODS
@@ -168,47 +96,6 @@ class Pipeline:
                 },
             )()
 
-    @classmethod
-    def from_operator(cls, op: str) -> Type["Pipeline"]:
-        """
-        Create a new Pipeline class based on existing rx.operators
-
-        Usage:
-            ```python
-            Map = Pipeline.from_operator('map')
-            Map(lambda x: 2*x)(2) # 4
-            ```
-
-        Args:
-            op: string representation of an operator from rx.operators
-
-        Returns:
-            Pipeline class with transform method injected with op
-        """
-
-        return type(
-            "Pipeline",
-            (Pipeline,),
-            {
-                "transform": lambda self: getattr(operators, op)(
-                    *self.args, **self.kwargs
-                ),
-            },
-        )
-
-    @classmethod
-    def from_lambda(cls, f: Callable) -> "Pipeline":
-        """
-        Convenience method for creating a Pipeline from the map operator and instantiating it with function f
-
-        Args:
-            f: function for the map operator
-
-        Returns:
-            Pipeline instance with injected map operator in transform and instantiated with f
-        """
-        return cls.from_operator("map")(f)
-
     def __call__(
         self,
         *args,
@@ -242,3 +129,51 @@ class Pipeline:
         else:
             # multiple constants or others
             return rx.of(*args).pipe(self._operation(), operators.to_list()).run()
+
+
+##############################################################################
+## Inject operators
+##############################################################################
+
+
+def pipeline_from_operator_jit(
+    op: Callable[[rx.typing.Observable], rx.typing.Observable]
+):
+    """
+    Returns a function that when called returns a Pipeline instance which
+    pipes the parent transform to the injected operator
+
+    Args:
+        op: rx operator
+
+    Returns:
+        function returning a just-in-time created Pipeline instance
+    """
+
+    @class_or_instancemethod
+    def _f(parent, *args, **kwargs):
+        if not isinstance(parent, type):
+            return type(
+                "Pipeline",
+                (Pipeline,),
+                {
+                    "transform": lambda _: rx.pipe(
+                        parent.transform(), op(*args, **kwargs)
+                    )
+                },
+            )()
+        else:
+            return type(
+                "Pipeline",
+                (Pipeline,),
+                {"transform": lambda _: op(*args, **kwargs)},
+            )()
+
+    return _f
+
+
+# inject operators into Pipeline class
+for op in [
+    x for x in dir(operators) if x[0] != "_" and x[0].islower() and x not in ["pipe"]
+]:
+    setattr(Pipeline, op, pipeline_from_operator_jit(getattr(operators, op)))
