@@ -1,9 +1,22 @@
 import logging
 
+import numpy as np
 import pytest
 import rx
 
+from rxpipes import Pipeline
+
 log = logging.getLogger(__name__)
+
+# create pipeline
+class Multiply(Pipeline):
+    def setup(self, mul):
+        self.mul = mul
+
+    def transform(self):
+        from rx import operators as ops
+
+        return ops.map(lambda x: x * self.mul)
 
 
 @pytest.mark.report(
@@ -14,22 +27,10 @@ log = logging.getLogger(__name__)
     expected="""
     """,
 )
-def test_basic():
+def test_pipeline_creation():
     """
     Basic tests
     """
-
-    from rxpipes import Pipeline
-
-    # create pipeline
-    class Multiply(Pipeline):
-        def setup(self, mul):
-            self.mul = mul
-
-        def transform(self):
-            from rx import operators as ops
-
-            return ops.map(lambda x: x * self.mul)
 
     # execute a pipeline
     assert Multiply(2)(2) == 4
@@ -79,17 +80,6 @@ def test_basic():
     """,
 )
 def test_return_observable():
-    from rxpipes import Pipeline
-
-    # create pipeline
-    class Multiply(Pipeline):
-        def setup(self, mul):
-            self.mul = mul
-
-        def transform(self):
-            from rx import operators as ops
-
-            return ops.map(lambda x: x * self.mul)
 
     Multiply(2)(2, return_observable=True).run() == Multiply(2)(2)
 
@@ -100,59 +90,26 @@ def test_return_observable():
     procedure="""
     """,
     expected="""
+    1. if input is singular and non iterable, output is a singular
+    2. if input is singular and iterable, the pipeline is applied to each element along the 1st dimension and appended to a list
+    3. if there are multiple inputs, the pipeline is applied to each input seperately and appended to a list
     """,
 )
-def test_intermediate():
+def test_input_polymorphism():
     """
-    Intermediate tests
+    Test input polymorphism
     """
+    mul2 = Multiply(2)
 
-    import numpy as np
+    assert mul2(2) == 4
+    assert mul2(2, 2) == [4, 4]
+    assert mul2([2, 2]) == [4, 4]
 
-    from rxpipes import Pipeline
+    assert mul2([2], [2]) == [[2, 2], [2, 2]]
+    assert mul2([[2], [2]]) == [[2, 2], [2, 2]]
 
-    class Normalize(Pipeline):
-        def setup(self, low, high):
-            self.low = low
-            self.high = high
+    assert mul2(np.array([2])) == [4]
+    assert mul2(np.array([2, 2])) == [4, 4]
 
-        def transform(self):
-            from rx import operators as ops
-
-            def _f(x):
-                _max = x.max()
-                _min = x.min()
-                factor = ((self.high - self.low) + 1e-12) / ((_max - _min) + 1e-12)
-                return (x - _min) * factor + self.low
-
-            return ops.map(_f)
-
-    ndarr = np.array([1, 2, 3])
-    res = Normalize(0, 1)([ndarr])[0]
-    assert res.min() >= 0
-    assert res.max() <= 1 + 1e-12
-
-    class Rescale(Pipeline):
-        def setup(self, shape):
-            self.shape = shape
-
-        def transform(self):
-            import cv2
-            from rx import operators as ops
-
-            def _f(x):
-                return cv2.resize(x.astype("float32"), self.shape)
-
-            return ops.map(_f)
-
-    ndarr = np.arange(64 * 64).reshape((64, 64))
-    res = Rescale((32, 32))([ndarr])[0]
-    assert res.shape == (32, 32)
-
-    pipeline = Pipeline.pipe(Normalize(0, 1), Rescale((3, 3)))
-    ndarr = np.arange(5 * 5).reshape((5, 5))
-    res = pipeline([ndarr])[0]
-
-    assert res.shape == (3, 3)
-    assert res.min() >= 0
-    assert res.max() <= 1 + 1e-12
+    assert np.array_equal(mul2([np.array([2])])[0], np.array([4]))
+    assert np.array_equal(mul2([np.array([2, 2])])[0], np.array([4, 4]))
