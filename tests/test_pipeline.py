@@ -78,6 +78,30 @@ def test_basic():
     expected="""
     """,
 )
+def test_return_observable():
+    from rxpipes import Pipeline
+
+    # create pipeline
+    class Multiply(Pipeline):
+        def setup(self, mul):
+            self.mul = mul
+
+        def transform(self):
+            from rx import operators as ops
+
+            return ops.map(lambda x: x * self.mul)
+
+    Multiply(2)(2, return_observable=True).run() == Multiply(2)(2)
+
+
+@pytest.mark.report(
+    specification="""
+    """,
+    procedure="""
+    """,
+    expected="""
+    """,
+)
 def test_intermediate():
     """
     Intermediate tests

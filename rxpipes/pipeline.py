@@ -25,7 +25,7 @@ class Pipeline:
         self.setup(*args, **kwargs)
 
     ##############################################################################
-    ## USER DEFINED METHODS
+    ## OVERRIDE WHEN SUBCLASSING
     ##############################################################################
 
     def setup(self, *args: Optional[Any], **kwargs: Optional[Any]):
@@ -104,7 +104,11 @@ class Pipeline:
         scheduler=None,
         error=lambda e: log.error(e),
         completed=None,
+        return_observable=False,
     ):
+        """
+        Runs the Pipeline on data
+        """
 
         if len(args) == 1:
             # observable is passed in
@@ -113,27 +117,41 @@ class Pipeline:
                     raise Exception(
                         "Error: subscribe kwargs is required when arg is an Observable"
                     )
-                return (
-                    args[0]
-                    .pipe(self._operation())
-                    .subscribe(
-                        on_next=subscribe,
-                        on_error=error,
-                        on_completed=completed,
-                        scheduler=scheduler,
+                if return_observable:
+                    return args[0].pipe(self._operation())
+                else:
+                    return (
+                        args[0]
+                        .pipe(self._operation())
+                        .subscribe(
+                            on_next=subscribe,
+                            on_error=error,
+                            on_completed=completed,
+                            scheduler=scheduler,
+                        )
                     )
-                )
             # fixed length iterable is passed in
             elif isinstance(args[0], Iterable):
-                return (
-                    rx.from_(args[0]).pipe(self._operation(), operators.to_list()).run()
-                )
+                if return_observable:
+                    return rx.from_(args[0]).pipe(self._operation())
+                else:
+                    return (
+                        rx.from_(args[0])
+                        .pipe(self._operation(), operators.to_list())
+                        .run()
+                    )
             # constant or others
             else:
-                return rx.of(*args).pipe(self._operation()).run()
+                if return_observable:
+                    return rx.of(*args).pipe(self._operation())
+                else:
+                    return rx.of(*args).pipe(self._operation()).run()
         else:
             # multiple constants or others
-            return rx.of(*args).pipe(self._operation(), operators.to_list()).run()
+            if return_observable:
+                return rx.of(*args).pipe(self._operation())
+            else:
+                return rx.of(*args).pipe(self._operation(), operators.to_list()).run()
 
 
 ##############################################################################

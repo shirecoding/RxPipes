@@ -2,7 +2,10 @@ import asyncio
 import functools
 
 import rx
+import rx.operators as ops
+from rx.core.notification import OnCompleted, OnError, OnNext
 from rx.disposable import Disposable
+from rx.scheduler.eventloop import AsyncIOScheduler
 
 
 class class_or_instancemethod(classmethod):
@@ -25,3 +28,26 @@ def async_iterable_to_observable(iter, loop):
         return Disposable(lambda: task.cancel())
 
     return rx.create(on_subscribe)
+
+
+async def observable_to_async_iterable(obs, loop):
+    queue = asyncio.Queue()
+
+    def on_next(i):
+        queue.put_nowait(i)
+
+    disposable = obs.pipe(ops.materialize()).subscribe(
+        on_next=on_next, scheduler=AsyncIOScheduler(loop=loop)
+    )
+
+    while True:
+        i = await queue.get()
+        if isinstance(i, OnNext):
+            yield i.value
+            queue.task_done()
+        elif isinstance(i, OnError):
+            disposable.dispose()
+            raise (Exception(i.value))
+        else:
+            disposable.dispose()
+            break
