@@ -5,7 +5,19 @@ from rx.scheduler.eventloop import AsyncIOScheduler
 
 from rxpipes import Pipeline, async_iterable_to_observable, observable_to_async_iterable
 
+# event loop
 loop = asyncio.get_event_loop()
+
+# example pipeline
+class Multiply(Pipeline):
+    def setup(self, mul):
+        self.mul = mul
+
+    def transform(self):
+        from rx import operators as ops
+
+        return ops.map(lambda x: x * self.mul)
+
 
 ########################################################################
 ## observable_to_async_iterable
@@ -13,7 +25,9 @@ loop = asyncio.get_event_loop()
 
 
 async def test_observable_to_async_iterable(loop):
-    gen = observable_to_async_iterable(rx.from_([1, 2, 3, 4]), loop)
+    gen = observable_to_async_iterable(
+        Multiply(2)([1, 2, 3, 4], return_observable=True), loop
+    )
     async for i in gen:
         print(i)
 
