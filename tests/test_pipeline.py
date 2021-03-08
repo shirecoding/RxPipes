@@ -1,8 +1,8 @@
 import logging
+import time
 
 import numpy as np
 import pytest
-import time
 import rx
 from rx.subject import Subject
 
@@ -71,6 +71,9 @@ def test_pipeline_creation():
         subscribe=lambda x: res.append(x),
     )
     assert res == [3, 3, 3, 3, 2]
+
+    # test default pipeline
+    assert Pipeline()(2) == 2
 
 
 @pytest.mark.report(
