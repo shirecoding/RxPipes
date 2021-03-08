@@ -113,6 +113,7 @@ class Pipeline:
         if len(args) == 1:
             # observable is passed in
             if isinstance(args[0], rx.core.typing.Observable):
+                print("is observable")
                 if not subscribe:
                     raise Exception(
                         "Error: subscribe kwargs is required when arg is an Observable"
@@ -132,6 +133,7 @@ class Pipeline:
                     )
             # fixed length iterable is passed in
             elif isinstance(args[0], Iterable):
+                print("is observable1")
                 if return_observable:
                     return rx.from_(args[0]).pipe(self._operation())
                 else:
@@ -142,11 +144,13 @@ class Pipeline:
                     )
             # constant or others
             else:
+                print("is observable2")
                 if return_observable:
                     return rx.of(*args).pipe(self._operation())
                 else:
                     return rx.of(*args).pipe(self._operation()).run()
         else:
+            print("is observable3")
             # multiple constants or others
             if return_observable:
                 return rx.of(*args).pipe(self._operation())

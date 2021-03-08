@@ -2,7 +2,9 @@ import logging
 
 import numpy as np
 import pytest
+import time
 import rx
+from rx.subject import Subject
 
 from rxpipes import Pipeline
 
@@ -69,6 +71,25 @@ def test_pipeline_creation():
         subscribe=lambda x: res.append(x),
     )
     assert res == [3, 3, 3, 3, 2]
+
+
+@pytest.mark.report(
+    specification="""
+    """,
+    procedure="""
+    """,
+    expected="""
+    """,
+)
+def test_dispose():
+    acc = []
+    s = Subject()
+    p = Pipeline.map(lambda x: x)(s, subscribe=lambda x: acc.append(x))
+    s.on_next(1)
+    assert acc == [1], acc
+    p.dispose()
+    s.on_next(2)
+    assert acc == [1], acc
 
 
 @pytest.mark.report(
