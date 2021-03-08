@@ -44,9 +44,9 @@ class Pipeline:
         Override this transform function to implement custom functionality when subclassing Pipeline
 
         Returns:
-            a function mapping an observable to another
+            a function mapping an observable to another (default = lambda x: x)
         """
-        return
+        return lambda x: x
 
     ##############################################################################
     ## INTERNALS
