@@ -36,8 +36,6 @@ class Pipeline:
             args: user defined args
             kwargs: user defined kwards
         """
-        self.args = args
-        self.kwargs = kwargs
 
     def transform(self) -> Callable[[rx.typing.Observable], rx.typing.Observable]:
         """
