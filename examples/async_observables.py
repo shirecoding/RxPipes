@@ -1,7 +1,10 @@
 import asyncio
+import threading
+import time
 
 import rx
 from rx.scheduler.eventloop import AsyncIOScheduler
+from rx.subject import Subject
 
 from rxpipes import Pipeline, async_iterable_to_observable, observable_to_async_iterable
 
@@ -20,26 +23,97 @@ class Multiply(Pipeline):
         return ops.map(lambda x: x * self.mul)
 
 
+print(
+    """
 ########################################################################
-## observable_to_async_iterable
+## test observable_to_async_iterable in main thread
 ########################################################################
+"""
+)
 
 
-async def test_observable_to_async_iterable(loop):
+async def task(loop):
     gen = observable_to_async_iterable(
         Multiply(2)([1, 2, 3, 4], return_observable=True), loop
     )
     async for i in gen:
-        print(i)
+        print(i, threading.current_thread())
 
     print("done")
 
 
-loop.run_until_complete(test_observable_to_async_iterable(loop))
+print(f"run loop in thread {threading.current_thread()}")
+loop.run_until_complete(task(loop))
 
+print(
+    """
+########################################################################
+## test observable_to_async_iterable with observable on same thread
+########################################################################
+"""
+)
+
+
+async def task(loop):
+    gen = observable_to_async_iterable(
+        Multiply(2)
+        .take(5)
+        .do_action(lambda x: print("observable", x, threading.current_thread()))(
+            rx.interval(0.25), return_observable=True
+        ),
+        loop,
+    )
+    async for i in gen:
+        print(i, threading.current_thread())
+
+    print("done")
+
+
+print(f"run loop in thread {threading.current_thread()}")
+loop.run_until_complete(task(loop))
+
+print(
+    """
+########################################################################
+## test observable_to_async_iterable with observable on diff thread
+########################################################################
+"""
+)
+
+s = Subject()
+
+
+def emissions():
+    while True:
+        time.sleep(0.5)
+        print(f"emiting on thread {threading.current_thread()}")
+        # loop.call_soon_threadsafe(s.on_next, 999)
+        s.on_next(999)
+
+
+threading.Thread(target=emissions).start()
+
+
+async def task(loop):
+
+    obs = Pipeline().take(5)(s, return_observable=True)
+    gen = observable_to_async_iterable(obs, loop)
+
+    async for i in gen:
+        print(i, threading.current_thread())
+
+
+print(f"run loop in thread {threading.current_thread()}")
+loop.run_until_complete(task(loop))
+
+
+print(
+    """
 ########################################################################
 ## async_iterable_to_observable
 ########################################################################
+"""
+)
 
 
 async def ticker(delay, to):
