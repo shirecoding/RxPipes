@@ -7,6 +7,7 @@ from rxpipes import Pipeline, async_iterable_to_observable, observable_to_async_
 
 # event loop
 loop = asyncio.get_event_loop()
+loop.set_debug(True)
 
 # example pipeline
 class Multiply(Pipeline):

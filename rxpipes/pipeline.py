@@ -111,13 +111,9 @@ class Pipeline:
         if len(args) == 1:
             # observable is passed in
             if isinstance(args[0], rx.core.typing.Observable):
-                if not subscribe:
-                    raise Exception(
-                        "Error: subscribe kwargs is required when arg is an Observable"
-                    )
                 if return_observable:
                     return args[0].pipe(self._operation())
-                else:
+                elif subscribe:
                     return (
                         args[0]
                         .pipe(self._operation())
@@ -128,6 +124,11 @@ class Pipeline:
                             scheduler=scheduler,
                         )
                     )
+                else:
+                    raise Exception(
+                        "Error: either subscribe or return_observable kwargs is required when arg is an Observable"
+                    )
+
             # fixed length iterable is passed in
             elif isinstance(args[0], Iterable):
                 if return_observable:
