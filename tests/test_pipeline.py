@@ -35,9 +35,9 @@ def test_pipeline_creation():
     """
 
     # execute a pipeline
-    assert Multiply(2)(2) == 4
+    assert Multiply(2)(2) == [4]
     assert Multiply(2)([1, 2, 3]) == [2, 4, 6]
-    assert Multiply(2).map(lambda x: 2 * x)(2) == 8
+    assert Multiply(2).map(lambda x: 2 * x)(2) == [8]
     assert Multiply(1).max()([1, 2, 3]) == [3]
     assert Multiply(2).map(lambda x: 2 * x).max()([1, 2, 3, 4, 5]) == [20]
     pipeline = Multiply(1).map(lambda x: 3 * x).filter(lambda x: x % 2 == 0).max()
@@ -45,35 +45,34 @@ def test_pipeline_creation():
 
     # subscribe to a pipeline
     acc = []
-    Multiply(2)(rx.of(1, 2, 3), subscribe=lambda x: acc.append(x))
+    Multiply(2).to_observable(rx.of(1, 2, 3)).subscribe(lambda x: acc.append(x))
     assert acc == [2, 4, 6]
     acc = []
     pipeline = Multiply(1).map(lambda x: 3 * x).filter(lambda x: x % 2 == 0).max()
-    pipeline(rx.from_([1, 4, 2, 5, 2]), subscribe=lambda x: acc.append(x))
+    pipeline.to_observable(rx.from_([1, 4, 2, 5, 2])).subscribe(lambda x: acc.append(x))
     assert acc == [12]
 
     # compose pipelines from instance
     mul2 = Multiply(2)
     mul4 = mul2.pipe(mul2)
-    assert mul4(2) == 8
+    assert mul4(2) == [8]
 
     # compose pipelines from class
-    assert Pipeline.pipe(mul2, mul2)(2) == 8
-    assert Pipeline.pipe(Multiply(2), Multiply(2))(2) == 8
+    assert Pipeline.pipe(mul2, mul2)(2) == [8]
+    assert Pipeline.pipe(Multiply(2), Multiply(2))(2) == [8]
 
     # create pipeline from lambda
-    assert Pipeline.map(lambda x: x * 2)(2) == 4
+    assert Pipeline.map(lambda x: x * 2)(2) == [4]
 
     # test buffer
     res = []
-    Multiply(2).buffer_with_count(3).map(lambda xs: len(xs))(
-        rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
-        subscribe=lambda x: res.append(x),
-    )
+    Multiply(2).buffer_with_count(3).map(lambda xs: len(xs)).to_observable(
+        rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
+    ).subscribe(lambda x: res.append(x))
     assert res == [3, 3, 3, 3, 2]
 
     # test default pipeline
-    assert Pipeline()(2) == 2
+    assert Pipeline()(2) == [2]
 
 
 @pytest.mark.report(
@@ -87,7 +86,7 @@ def test_pipeline_creation():
 def test_dispose():
     acc = []
     s = Subject()
-    p = Pipeline.map(lambda x: x)(s, subscribe=lambda x: acc.append(x))
+    p = Pipeline.map(lambda x: x).to_observable(s).subscribe(lambda x: acc.append(x))
     s.on_next(1)
     assert acc == [1], acc
     p.dispose()
@@ -105,7 +104,7 @@ def test_dispose():
 )
 def test_return_observable():
 
-    Multiply(2)(2, return_observable=True).run() == Multiply(2)(2)
+    assert Multiply(2).to_list().to_observable(2).run() == Multiply(2)(2)
 
 
 @pytest.mark.report(
@@ -125,11 +124,11 @@ def test_input_polymorphism():
     """
     mul2 = Multiply(2)
 
-    assert mul2(2) == 4
+    assert mul2(2) == [4]
     assert mul2(2, 2) == [4, 4]
     assert mul2([2, 2]) == [4, 4]
 
-    assert mul2([2], [2]) == [[2, 2], [2, 2]]
+    assert mul2([2], [2]) == [4, 4]
     assert mul2([[2], [2]]) == [[2, 2], [2, 2]]
 
     assert mul2(np.array([2])) == [4]

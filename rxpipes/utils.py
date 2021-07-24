@@ -8,7 +8,7 @@ from rx.disposable import Disposable
 from rx.scheduler.eventloop import AsyncIOScheduler, AsyncIOThreadSafeScheduler
 
 
-class class_or_instancemethod(classmethod):
+class class_or_instance_method(classmethod):
     def __get__(self, instance, type_):
         descr_get = super().__get__ if instance is None else self.__func__.__get__
         return descr_get(instance, type_)

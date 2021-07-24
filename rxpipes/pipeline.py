@@ -6,15 +6,16 @@ from rx import Observable, operators
 from rx.scheduler.eventloop import AsyncIOScheduler
 from rx.subject import Subject
 
-from .utils import class_or_instancemethod
+from .utils import class_or_instance_method
 
 log = logging.getLogger(__name__)
 
 
 class Pipeline:
     def __init__(self, *args: Optional[Any], **kwargs: Optional[Any]):
-        """
-        Pipeline
+        """Pipeline
+
+        Args and kwargs will be forwarded to user defined setup
 
         Args:
             args: args passed to user defined setup
@@ -57,7 +58,7 @@ class Pipeline:
     ## USAGE
     ##############################################################################
 
-    @class_or_instancemethod
+    @class_or_instance_method
     def pipe(self, *pipelines: "Pipeline") -> "Pipeline":
         """
 
@@ -95,62 +96,27 @@ class Pipeline:
                 },
             )()
 
-    def __call__(
-        self,
-        *args,
-        subscribe=None,
-        scheduler=None,
-        error=lambda e: log.error(e),
-        completed=None,
-        return_observable=False,
-    ):
+    def to_observable(self, *args):
+        return rx.merge(
+            *[
+                x
+                if isinstance(x, rx.core.typing.Observable)
+                else rx.from_(x)
+                if isinstance(x, Iterable)
+                else rx.of(x)
+                for x in args
+            ]
+        ).pipe(self._operation())
+
+    def to_blocking(self, *args):
+        return self.to_observable(*args).pipe(operators.to_list()).run()
+
+    def __call__(self, *args):
         """
-        Runs the Pipeline on data
+        Alias for to_blocking
         """
 
-        if len(args) == 1:
-            # observable is passed in
-            if isinstance(args[0], rx.core.typing.Observable):
-                if return_observable:
-                    return args[0].pipe(self._operation())
-                elif subscribe:
-                    return (
-                        args[0]
-                        .pipe(self._operation())
-                        .subscribe(
-                            on_next=subscribe,
-                            on_error=error,
-                            on_completed=completed,
-                            scheduler=scheduler,
-                        )
-                    )
-                else:
-                    raise Exception(
-                        "Error: either subscribe or return_observable kwargs is required when arg is an Observable"
-                    )
-
-            # fixed length iterable is passed in
-            elif isinstance(args[0], Iterable):
-                if return_observable:
-                    return rx.from_(args[0]).pipe(self._operation())
-                else:
-                    return (
-                        rx.from_(args[0])
-                        .pipe(self._operation(), operators.to_list())
-                        .run()
-                    )
-            # constant or others
-            else:
-                if return_observable:
-                    return rx.of(*args).pipe(self._operation())
-                else:
-                    return rx.of(*args).pipe(self._operation()).run()
-        else:
-            # multiple constants or others
-            if return_observable:
-                return rx.of(*args).pipe(self._operation())
-            else:
-                return rx.of(*args).pipe(self._operation(), operators.to_list()).run()
+        return self.to_blocking(*args)
 
 
 ##############################################################################
@@ -172,7 +138,7 @@ def pipeline_from_operator_jit(
         function returning a just-in-time created Pipeline instance
     """
 
-    @class_or_instancemethod
+    @class_or_instance_method
     def _f(parent, *args, **kwargs):
         if not isinstance(parent, type):
             return type(

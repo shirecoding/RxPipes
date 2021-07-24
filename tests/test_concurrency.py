@@ -37,9 +37,10 @@ def test_concurrency():
     assert set(res) == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
 
     res = set()
-    Pipeline.map(lambda x: x).pipe(ScheduleEach(intense_calculation, pool_scheduler))(
-        rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
-        subscribe=lambda x: res.add(x),
+    Pipeline.map(lambda x: x).pipe(
+        ScheduleEach(intense_calculation, pool_scheduler)
+    ).to_observable(rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)).subscribe(
+        lambda x: res.add(x)
     )
     time.sleep(1)
     assert res == {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}
@@ -51,9 +52,10 @@ def test_concurrency():
     assert res[0] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
     res = []
-    Pipeline.map(lambda x: x).pipe(Parallel(intense_calculation, pool_scheduler))(
-        rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),
-        subscribe=lambda x: res.append(x),
+    Pipeline.map(lambda x: x).pipe(
+        Parallel(intense_calculation, pool_scheduler)
+    ).to_observable(rx.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14),).subscribe(
+        lambda x: res.append(x)
     )
     time.sleep(1)
     assert res[0] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
