@@ -33,9 +33,7 @@ print(
 
 
 async def task(loop):
-    gen = observable_to_async_iterable(
-        Multiply(2)([1, 2, 3, 4], return_observable=True), loop
-    )
+    gen = observable_to_async_iterable(Multiply(2).to_observable([1, 2, 3, 4]), loop)
     async for i in gen:
         print(i, threading.current_thread())
 
@@ -58,9 +56,8 @@ async def task(loop):
     gen = observable_to_async_iterable(
         Multiply(2)
         .take(5)
-        .do_action(lambda x: print("observable", x, threading.current_thread()))(
-            rx.interval(0.25), return_observable=True
-        ),
+        .do_action(lambda x: print("observable", x, threading.current_thread()))
+        .to_observable(rx.interval(0.25)),
         loop,
     )
     async for i in gen:
@@ -96,7 +93,7 @@ threading.Thread(target=emissions).start()
 
 async def task(loop):
 
-    obs = Pipeline().take(5)(s, return_observable=True)
+    obs = Pipeline().take(5).to_observable(s)
     gen = observable_to_async_iterable(obs, loop)
 
     async for i in gen:
@@ -124,8 +121,8 @@ async def ticker(delay, to):
 
 def main(loop):
     obs = async_iterable_to_observable(ticker(0.2, 10), loop)
-    Pipeline.map(lambda x: 2 * x).map(lambda x: x * 2)(
-        obs, subscribe=lambda x: print(x), scheduler=AsyncIOScheduler(loop=loop)
+    Pipeline.map(lambda x: 2 * x).map(lambda x: x * 2).to_observable(obs).subscribe(
+        lambda x: print(x), scheduler=AsyncIOScheduler(loop=loop)
     )
 
 

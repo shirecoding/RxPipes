@@ -1,6 +1,7 @@
 ## Example: Parallel Processling
 
 ```python
+import time
 import multiprocessing
 from rx.scheduler import ThreadPoolScheduler
 from rxpipes.concurrency import Parallel
