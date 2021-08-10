@@ -33,21 +33,21 @@ def async_iterable_to_observable(iter, loop):
 async def observable_to_async_iterable(obs, loop):
     queue = asyncio.Queue()
 
-    def on_next(i):
-        loop.call_soon_threadsafe(queue.put_nowait, i)
+    def on_next(x):
+        loop.call_soon_threadsafe(queue.put_nowait, x)
 
     disposable = obs.pipe(ops.materialize()).subscribe(
         on_next=on_next, scheduler=AsyncIOScheduler(loop=loop)
     )
 
     while True:
-        i = await queue.get()
-        if isinstance(i, OnNext):
-            yield i.value
+        x = await queue.get()
+        if isinstance(x, OnNext):
+            yield x.value
             queue.task_done()
-        elif isinstance(i, OnError):
+        elif isinstance(x, OnError):
             disposable.dispose()
-            raise (Exception(i.value))
+            raise Exception(f"Observable OnError: {x.value}")
         else:
             disposable.dispose()
             break
