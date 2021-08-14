@@ -30,14 +30,21 @@ def async_iterable_to_observable(iter, loop):
     return rx.create(on_subscribe)
 
 
+def observable_to_async_queue(obs, loop):
+    queue = asyncio.Queue()
+    disposable = obs.subscribe(
+        on_next=lambda x: loop.call_soon_threadsafe(queue.put_nowait, x),
+        scheduler=AsyncIOScheduler(loop=loop),
+    )
+    return queue, disposable
+
+
 async def observable_to_async_iterable(obs, loop):
     queue = asyncio.Queue()
 
-    def on_next(x):
-        loop.call_soon_threadsafe(queue.put_nowait, x)
-
     disposable = obs.pipe(ops.materialize()).subscribe(
-        on_next=on_next, scheduler=AsyncIOScheduler(loop=loop)
+        on_next=lambda x: loop.call_soon_threadsafe(queue.put_nowait, x),
+        scheduler=AsyncIOScheduler(loop=loop),
     )
 
     while True:
