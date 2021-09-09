@@ -17,7 +17,6 @@ setup(
             "pytest-metadata",
             "numpy",
             "opencv-python",
-            "aiohttp",
         ],
         "docs": ["mkdocs", "mkdocstrings", "mkdocs-material"],
     },
